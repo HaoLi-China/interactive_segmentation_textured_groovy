@@ -1,0 +1,83 @@
+K 25
+svn:wc:ra_dav:version-url
+V 117
+/p/bosch-ros-pkg/code/!svn/ver/1599/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/src
+END
+c_track_features_with_grasping.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 152
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/src/c_track_features_with_grasping.cpp
+END
+c_track_features_3d.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 141
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/src/c_track_features_3d.cpp
+END
+compute_icp_server.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 140
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/src/compute_icp_server.cpp
+END
+test_client.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 133
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/src/test_client.cpp
+END
+find_corners.py
+K 25
+svn:wc:ra_dav:version-url
+V 133
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/src/find_corners.py
+END
+push_evaluator.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 136
+/p/bosch-ros-pkg/code/!svn/ver/1599/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/src/push_evaluator.cpp
+END
+roi_pcl_filter.h
+K 25
+svn:wc:ra_dav:version-url
+V 134
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/src/roi_pcl_filter.h
+END
+transform_depth_image.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 143
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/src/transform_depth_image.cpp
+END
+track_features_lk_class.py
+K 25
+svn:wc:ra_dav:version-url
+V 144
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/src/track_features_lk_class.py
+END
+c_track_features.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 138
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/src/c_track_features.cpp
+END
+Timer.h
+K 25
+svn:wc:ra_dav:version-url
+V 125
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/src/Timer.h
+END
+execute_grasps.py
+K 25
+svn:wc:ra_dav:version-url
+V 135
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/src/execute_grasps.py
+END
+find_poke_point.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 137
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/src/find_poke_point.cpp
+END

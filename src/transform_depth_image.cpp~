@@ -1,0 +1,1074 @@
+/**
+ * Copyright (c) 2011, Robert Bosch LLC
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of Robert Bosch LLC nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/**
+  * \author Christian Bersch
+  */
+
+#include <assert.h>
+
+#include <ros/ros.h>
+#include "sensor_msgs/PointCloud2.h"
+#include <pcl_ros/transforms.h>
+
+#include <pcl/sample_consensus/method_types.h>
+#include <pcl/sample_consensus/model_types.h>
+#include <pcl/segmentation/sac_segmentation.h>
+#include <pcl/ModelCoefficients.h>
+#include <pcl/filters/extract_indices.h>
+#include <pcl/features/normal_3d.h>
+
+#include <pcl/io/pcd_io.h>
+
+#include "roi_pcl_filter.h"
+
+#include "cv_bridge/cv_bridge.h"
+#include <opencv/cv.h>
+#include <opencv/highgui.h>
+#include "sensor_msgs/Image.h"
+#include "sensor_msgs/CameraInfo.h"
+#include <image_geometry/pinhole_camera_model.h>
+#include <tf_conversions/tf_eigen.h>
+#include <eigen_conversions/eigen_msg.h>
+
+#include <interactive_segmentation_textured/cornerPokePoseFind.h>
+#include <interactive_segmentation_textured/cornerFind.h>
+#include <interactive_segmentation_textured/depthImage.h>
+#include <interactive_segmentation_textured/estimateRigid.h>
+#include <boost/foreach.hpp>
+
+
+
+//#include <camera_self_filter/mask.h>
+
+#define X_OUTPUT 1
+
+using std::cout;
+using std::endl;
+using std::ostream;
+using namespace std;
+
+
+ostream& operator<< (ostream& out,  const tf::Transform  tf){
+	Eigen::Affine3d tf_eigen;
+	tf::transformTFToEigen(tf,tf_eigen);
+	out << tf_eigen.matrix();
+	return out;
+}
+
+static void
+icvGetRTMatrix( const CvPoint2D32f* a, const CvPoint2D32f* b,
+                int count, CvMat* M, int full_affine )
+{
+  /** Copied from https://code.ros.org/trac/opencv/browser/trunk/opencv/src/cv/cvlkpyramid.cpp?rev=2170  For license information please see the package LICENSE file                                                                          
+                                                                                
+  **/
+    if( full_affine )
+    {
+        double sa[36], sb[6];
+        CvMat A = cvMat( 6, 6, CV_64F, sa ), B = cvMat( 6, 1, CV_64F, sb );
+        CvMat MM = cvMat( 6, 1, CV_64F, M->data.db );
+
+        int i;
+
+        memset( sa, 0, sizeof(sa) );
+        memset( sb, 0, sizeof(sb) );
+
+        for( i = 0; i < count; i++ )
+        {
+            sa[0] += a[i].x*a[i].x;
+            sa[1] += a[i].y*a[i].x;
+            sa[2] += a[i].x;
+
+            sa[6] += a[i].x*a[i].y;
+            sa[7] += a[i].y*a[i].y;
+            sa[8] += a[i].y;
+
+            sa[12] += a[i].x;
+            sa[13] += a[i].y;
+            sa[14] += 1;
+
+            sb[0] += a[i].x*b[i].x;
+            sb[1] += a[i].y*b[i].x;
+            sb[2] += b[i].x;
+            sb[3] += a[i].x*b[i].y;
+            sb[4] += a[i].y*b[i].y;
+            sb[5] += b[i].y;
+        }
+
+        sa[21] = sa[0];
+        sa[22] = sa[1];
+        sa[23] = sa[2];
+        sa[27] = sa[6];
+        sa[28] = sa[7];
+        sa[29] = sa[8];
+        sa[33] = sa[12];
+        sa[34] = sa[13];
+        sa[35] = sa[14];
+
+        cvSolve( &A, &B, &MM, CV_SVD );
+    }
+    else
+    {
+        double sa[16], sb[4], m[4], *om = M->data.db;
+        CvMat A = cvMat( 4, 4, CV_64F, sa ), B = cvMat( 4, 1, CV_64F, sb );
+        CvMat MM = cvMat( 4, 1, CV_64F, m );
+
+        int i;
+
+        memset( sa, 0, sizeof(sa) );
+        memset( sb, 0, sizeof(sb) );
+
+        for( i = 0; i < count; i++ )
+        {
+            sa[0] += a[i].x*a[i].x + a[i].y*a[i].y;
+            sa[1] += 0;
+            sa[2] += a[i].x;
+            sa[3] += a[i].y;
+
+            sa[4] += 0;
+            sa[5] += a[i].x*a[i].x + a[i].y*a[i].y;
+            sa[6] += -a[i].y;
+            sa[7] += a[i].x;
+
+            sa[8] += a[i].x;
+            sa[9] += -a[i].y;
+            sa[10] += 1;
+            sa[11] += 0;
+
+            sa[12] += a[i].y;
+            sa[13] += a[i].x;
+            sa[14] += 0;
+            sa[15] += 1;
+
+            sb[0] += a[i].x*b[i].x + a[i].y*b[i].y;
+            sb[1] += a[i].x*b[i].y - a[i].y*b[i].x;
+            sb[2] += b[i].x;
+            sb[3] += b[i].y;
+        }
+
+        cvSolve( &A, &B, &MM, CV_SVD );
+
+        om[0] = om[4] = m[0];
+        om[1] = -m[1];
+        om[3] = m[1];
+        om[2] = m[2];
+        om[5] = m[3];
+    }
+}
+
+//CV_IMPL
+int
+cvEstimateRigidTransform( const CvArr* matA, const CvArr* matB, CvMat* matM, int full_affine, std::vector<int>& status_inliers )
+{
+//    const int COUNT = 15;
+//    const int WIDTH = 160, HEIGHT = 120;
+    const int RANSAC_MAX_ITERS = 500;
+    const int RANSAC_SIZE0 = 3;
+    const double RANSAC_GOOD_RATIO = 0.5;
+//    const double RANSAC_GOOD_RATIO = 0.2;
+    const double RANSAC_BOUNDING_RECT_MULTIPLIER = 0.05;
+
+    cv::Ptr<CvMat> sA, sB;
+    cv::AutoBuffer<CvPoint2D32f> pA, pB;
+    cv::AutoBuffer<int> good_idx;
+    cv::AutoBuffer<char> status;
+    cv::Ptr<CvMat> gray;
+
+    CvMat stubA, *A = cvGetMat( matA, &stubA );
+    CvMat stubB, *B = cvGetMat( matB, &stubB );
+    CvSize sz0, sz1;
+    int cn, equal_sizes;
+    int i, j, k, k1;
+    int count_x, count_y, count = 0;
+    double scale = 1;
+    CvRNG rng = cvRNG(-1);
+    double m[6]={0};
+    CvMat M = cvMat( 2, 3, CV_64F, m );
+    int good_count = 0;
+    CvRect brect;
+
+    if( !CV_IS_MAT(matM) )
+        CV_Error( matM ? CV_StsBadArg : CV_StsNullPtr, "Output parameter M is not a valid matrix" );
+
+    if( !CV_ARE_SIZES_EQ( A, B ) )
+        CV_Error( CV_StsUnmatchedSizes, "Both input images must have the same size" );
+
+    if( !CV_ARE_TYPES_EQ( A, B ) )
+        CV_Error( CV_StsUnmatchedFormats, "Both input images must have the same data type" );
+
+    else if( CV_MAT_TYPE(A->type) == CV_32FC2 || CV_MAT_TYPE(A->type) == CV_32SC2 )
+    {
+        count = A->cols*A->rows;
+        CvMat _pA, _pB;
+        pA.allocate(count);
+        pB.allocate(count);
+        _pA = cvMat( A->rows, A->cols, CV_32FC2, pA );
+        _pB = cvMat( B->rows, B->cols, CV_32FC2, pB );
+        cvConvert( A, &_pA );
+        cvConvert( B, &_pB );
+    }
+    else
+        CV_Error( CV_StsUnsupportedFormat, "Both input images must have either 8uC1 or 8uC3 type" );
+
+    good_idx.allocate(count);
+
+    if( count < RANSAC_SIZE0 )
+        return 0;
+
+    CvMat _pB = cvMat(1, count, CV_32FC2, pB);
+    brect = cvBoundingRect(&_pB, 1);
+
+    // RANSAC stuff:
+    // 1. find the consensus
+    for( k = 0; k < RANSAC_MAX_ITERS; k++ )
+    {
+        int idx[RANSAC_SIZE0];
+        CvPoint2D32f a[3];
+        CvPoint2D32f b[3];
+
+        memset( a, 0, sizeof(a) );
+        memset( b, 0, sizeof(b) );
+
+        // choose random 3 non-complanar points from A & B
+        for( i = 0; i < RANSAC_SIZE0; i++ )
+        {
+            for( k1 = 0; k1 < RANSAC_MAX_ITERS; k1++ )
+            {
+                idx[i] = cvRandInt(&rng) % count;
+
+                for( j = 0; j < i; j++ )
+                {
+                    if( idx[j] == idx[i] )
+                        break;
+                    // check that the points are not very close one each other
+                    if( fabs(pA[idx[i]].x - pA[idx[j]].x) +
+                        fabs(pA[idx[i]].y - pA[idx[j]].y) < FLT_EPSILON )
+                        break;
+                    if( fabs(pB[idx[i]].x - pB[idx[j]].x) +
+                        fabs(pB[idx[i]].y - pB[idx[j]].y) < FLT_EPSILON )
+                        break;
+                }
+
+                if( j < i )
+                    continue;
+
+                if( i+1 == RANSAC_SIZE0 )
+                {
+                    // additional check for non-complanar vectors
+                    a[0] = pA[idx[0]];
+                    a[1] = pA[idx[1]];
+                    a[2] = pA[idx[2]];
+
+                    b[0] = pB[idx[0]];
+                    b[1] = pB[idx[1]];
+                    b[2] = pB[idx[2]];
+
+                    double dax1 = a[1].x - a[0].x, day1 = a[1].y - a[0].y;
+                    double dax2 = a[2].x - a[0].x, day2 = a[2].y - a[0].y;
+                    double dbx1 = b[1].x - b[0].y, dby1 = b[1].y - b[0].y;
+                    double dbx2 = b[2].x - b[0].x, dby2 = b[2].y - b[0].y;
+                    const double eps = 0.01;
+
+                    if( fabs(dax1*day2 - day1*dax2) < eps*sqrt(dax1*dax1+day1*day1)*sqrt(dax2*dax2+day2*day2) ||
+                        fabs(dbx1*dby2 - dby1*dbx2) < eps*sqrt(dbx1*dbx1+dby1*dby1)*sqrt(dbx2*dbx2+dby2*dby2) )
+                        continue;
+                }
+                break;
+            }
+
+            if( k1 >= RANSAC_MAX_ITERS )
+                break;
+        }
+
+        if( i < RANSAC_SIZE0 )
+            continue;
+
+        // estimate the transformation using 3 points
+        icvGetRTMatrix( a, b, 3, &M, full_affine );
+
+        for( i = 0, good_count = 0; i < count; i++ )
+        {
+            if( fabs( m[0]*pA[i].x + m[1]*pA[i].y + m[2] - pB[i].x ) +
+                fabs( m[3]*pA[i].x + m[4]*pA[i].y + m[5] - pB[i].y ) < MAX(brect.width,brect.height)*RANSAC_BOUNDING_RECT_MULTIPLIER )
+                good_idx[good_count++] = i;
+        }
+
+        if( good_count >= count*RANSAC_GOOD_RATIO )
+            break;
+    }
+
+    if( k >= RANSAC_MAX_ITERS )
+        return 0;
+
+    if( good_count < count )
+    {
+    	status_inliers.resize(count, 0); //chris
+        for( i = 0; i < good_count; i++ )
+        {
+            j = good_idx[i];
+            pA[i] = pA[j];
+            pB[i] = pB[j];
+            status_inliers[j] = 1; //chris
+        }
+    }else{
+    	status_inliers.resize(count, 1); //chris
+    }
+
+    icvGetRTMatrix( pA, pB, good_count, &M, full_affine );
+    m[2] /= scale;
+    m[5] /= scale;
+    cvConvert( &M, matM );
+
+    return 1;
+}
+
+namespace cv{
+int estimateRigidTransform( const Mat& A,
+                            const Mat& B, Mat& M,
+                            bool fullAffine, std::vector<int>& status_inliers )
+{
+    M = cv::Mat(2, 3, CV_64F);
+    CvMat matA = A, matB = B, matM = M;
+     return cvEstimateRigidTransform(&matA, &matB, &matM, fullAffine, status_inliers);
+
+}
+};
+
+
+
+
+class DepthTransfomer{
+
+	typedef pcl::PointXYZ Point;
+//	typedef pcl::PointXYZRGB Point;
+
+	ros::NodeHandle _nh;
+	ros::NodeHandle _nh_private;
+	ros::ServiceServer _getMaskServer, _estimateRigidServer;
+
+//	sensor_msgs::CameraInfoConstPtr _cam_info;
+//	image_geometry::PinholeCameraModel _model;
+
+//	sensor_msgs::CameraInfoConstPtr _cam_info_new;
+	sensor_msgs::CameraInfoPtr _cam_info_new;
+	image_geometry::PinholeCameraModel _model_new;
+
+
+
+
+//	ros::ServiceClient _self_mask_client;
+	tf::TransformListener listener_;
+	//sensor_msgs::CvBridge _bridge;
+	//cv_bridge::CvImagePtr _bridge;
+	ROI_Filter<Point> roi_filter;
+
+	tf::Transform tf_virtual_cam;
+	tf::Transform tf_virtual_cam_transl;
+
+	pcl::ModelCoefficients::Ptr coefficients;
+    std::string point_cloud_topic;
+
+    int num_max_dilations;
+
+
+	double virtual_cam_z;
+	double virtual_cam_x;
+	std::string base_frame;
+
+	cv::Mat last_depth;
+
+
+
+
+
+    // colormap for disparities, RGB order
+    static unsigned char colormap[];
+
+
+public:
+	DepthTransfomer():_nh_private("~"){
+		_nh_private.param("num_max_dilations", num_max_dilations, 5);
+
+		std::string camera_name;
+		_nh_private.param<std::string>("camera_name_info_topic_original",camera_name, "/kinect/rgb/cmaera_info");
+
+
+		std::string camera_name_new;
+		_nh_private.param<std::string>("camera_name_info_topic_new",camera_name_new, "/prosilica/camera_info");
+
+		_nh_private.param<std::string>("base_frame",base_frame, "base_link");
+
+
+
+	   _nh_private.param<std::string>("point_cloud_topic",point_cloud_topic, "/kinect/rgb/points");
+
+
+//		_cam_info = ros::topic::waitForMessage<sensor_msgs::CameraInfo>(camera_name ,  ros::Duration(5.0));
+//		_model.fromCameraInfo(_cam_info);
+
+	   sensor_msgs::CameraInfoConstPtr cam_info_new = ros::topic::waitForMessage<sensor_msgs::CameraInfo>(camera_name_new,  ros::Duration(5.0));
+	   _cam_info_new = boost::const_pointer_cast<sensor_msgs::CameraInfo>(cam_info_new);
+		_cam_info_new->header.frame_id = "high_def_optical_frame";
+		_model_new.fromCameraInfo(_cam_info_new);
+
+		_getMaskServer = _nh.advertiseService("getDepthImage", &DepthTransfomer::getPokePointServiceCB, this);
+		_estimateRigidServer = _nh.advertiseService("estimateRigid", &DepthTransfomer::estimateRigidTransform2DRansacCB, this);
+
+//		_self_mask_client = _nh.serviceClient<camera_self_filter::mask>("self_mask");
+
+		ROS_INFO("point_cloud_topic %s",point_cloud_topic.c_str());
+
+		_nh_private.param("virtual_cam_z", virtual_cam_z, 1.5);
+		_nh_private.param("virtual_cam_x",virtual_cam_x, .60);
+
+		//create location of cam over table
+		tf_virtual_cam.setIdentity();
+		tf_virtual_cam_transl.setIdentity();
+		tf_virtual_cam_transl.setOrigin(tf::Vector3(virtual_cam_x, 0.0, virtual_cam_z));
+		//optical frame is rotated by 180 degree around y-axis
+		tf::Matrix3x3 rot(0, -1, 0, -1, 0, 0, 0, 0, -1);
+		tf::Quaternion q;
+		rot.getRotation(q);
+		tf_virtual_cam.setRotation(q);
+//		tf_virtual_cam.setRotation(tf::Quaternion(tf::Vector3(0.0, 1.0, 0.0), M_PI));
+//		tf_virtual_cam.setRotation(tf::Quaternion(tf::Vector3(0.0, 1.0, 0.0), M_PI * 0.5));
+
+		//inverse because later we transform into new cam from base_frame
+//		tf_virtual_cam = tf_virtual_cam.inverse();
+
+		cout<<"tf_virtual_cam"<<endl<<tf_virtual_cam<<endl;
+		cout<<"tf_virtual_cam_transl"<<endl<<tf_virtual_cam_transl<<endl;
+		cout<<"base_frame "<<base_frame<<endl;
+
+
+
+
+
+	}
+
+	bool getPokePointServiceCB(interactive_segmentation_textured::depthImage::Request& req, interactive_segmentation_textured::depthImage::Response& res){
+
+
+		sensor_msgs::PointCloud2ConstPtr cloud_msg = ros::topic::waitForMessage<sensor_msgs::PointCloud2>(point_cloud_topic, ros::Duration(5.0));
+		pcl::PointCloud<Point>::Ptr cloud(new  pcl::PointCloud<Point>());
+		pcl::fromROSMsg<Point>(*cloud_msg, *cloud);
+
+//		cv::Mat top_view_rgb;
+		getDepthImage(cloud, last_depth);
+		IplImage ipl_mask(last_depth);
+		cv::Mat ipl2mat(ipl_mask);
+		
+		// sensor_msgs::ImagePtr img_msg = sensor_msgs::CvBridge::cvToImgMsg(&ipl_mask);
+		cv_bridge::CvImagePtr cv_ptr;
+		cv_ptr->image = ipl2mat;
+		sensor_msgs::ImagePtr img_msg = cv_ptr->toImageMsg();
+		
+		img_msg->header.frame_id = _cam_info_new->header.frame_id;
+		img_msg->header.stamp = ros::Time::now();
+		res.depth_image = *img_msg;
+
+
+ 		return true;
+
+	}
+
+
+	bool getDepthImage(pcl::PointCloud<Point>::Ptr cloud_in, cv::Mat& depth_image_new){
+
+
+	  
+
+		pcl::PointCloud<Point>::Ptr cloud(new pcl::PointCloud<Point>() );
+		 pcl::PassThrough<Point> pass;
+		  pass.setInputCloud (cloud_in);
+		  pass.setFilterFieldName ("x");
+		  pass.setFilterLimits (-5.0, 5.0);
+		  //pass.setFilterLimitsNegative (true);
+		  pass.filter (*cloud);
+
+
+		//get self mask
+//		camera_self_filter::mask servicecall;
+//		servicecall.request.header.frame_id = cloud.header.frame_id;
+//		servicecall.request.header.stamp = cloud.header.stamp;
+//		_self_mask_client.call(servicecall);
+//		sensor_msgs::ImageConstPtr selfMaskPtr = boost::make_shared<sensor_msgs::Image>(servicecall.response.mask_image);
+//		IplImage* ipl_self = _bridge.imgMsgToCv(selfMaskPtr, "passthrough");
+//		cv::Mat temp(ipl_self);
+//		cv::Mat self_mask = temp.clone();
+
+		//get all transforms
+
+
+		tf::StampedTransform tf_realcam_in_base;
+
+		listener_.waitForTransform(_cam_info_new->header.frame_id ,  cloud->header.frame_id, ros::Time(0), ros::Duration(5.0));
+		listener_.lookupTransform(_cam_info_new->header.frame_id,  cloud->header.frame_id, ros::Time(0), tf_realcam_in_base);
+		cout<<"_cam_info_new->header.frame_id "<<_cam_info_new->header.frame_id<<endl;
+		cout<<"cloud->header.frame_id "<<cloud->header.frame_id<<endl;
+//		listener_.lookupTransform(  cloud_msg->header.frame_id, base_frame, ros::Time(0), tf_realcam_in_base);
+
+
+
+		//transform cloud into baselink
+		pcl::PointCloud<Point> cloud_in_virt_cam;
+
+		tf::Transform& full_tf =  tf_realcam_in_base;
+//		tf::Transform full_tf =  tf_realcam_in_base;
+
+		cout<<"full_tf"<<endl<<full_tf<<endl;
+
+		Eigen::Affine3d transform_eigen;
+		tf::transformTFToEigen(full_tf,transform_eigen );
+		Eigen::Matrix4d transform_eigen3(transform_eigen.matrix());
+		Eigen::Matrix4f transform_eigen3f = transform_eigen3.cast<float>();
+		pcl::transformPointCloud(  *cloud, cloud_in_virt_cam, transform_eigen3f );
+
+
+
+
+
+
+//		cloud_in_virt_cam.header.frame_id = base_frame;
+		cloud_in_virt_cam.header.frame_id = _cam_info_new->header.frame_id;
+		cloud_in_virt_cam.header.stamp = cloud->header.stamp;
+
+
+
+		//project
+
+	    //all
+		cv::Mat mask = cv::Mat::zeros(cv::Size(_cam_info_new->width, _cam_info_new->height), CV_32F);
+		mask.setTo(numeric_limits<float>::max());
+
+		sensor_msgs::ImageConstPtr imgp = ros::topic::waitForMessage<sensor_msgs::Image>("/prosilica/image_rect_color",  ros::Duration(5.0));
+		//sensor_msgs::CvBridge bridge_mask;
+		//IplImage* iplimagemask = bridge_mask.imgMsgToCv(imgp, "passthrough");
+		cv_bridge::CvImagePtr bridge_mask;
+		bridge_mask = cv_bridge::toCvCopy(imgp);
+		cv::Mat maskRGB(bridge_mask->image);
+		
+//		cv::Mat maskRGB = cv::Mat::zeros(cv::Size(_cam_info_new->width, _cam_info_new->height), CV_8UC3);
+		ROS_INFO("picel_coords %f %f %f", cloud->points[0].x, cloud->points[0].y,cloud->points[0].z );
+		vector<Point, Eigen::aligned_allocator<Point> >::iterator iter;
+		for (iter = cloud_in_virt_cam.points.begin(); iter != cloud_in_virt_cam.points.end(); ++iter){
+			Point& point = *iter;
+
+				if (isnan(point.x) || isnan(point.y) || isnan(point.z))
+					continue;
+			cv::Point3d p3d(point.x, point.y, point.z);
+			cv::Point2d p2d;
+			p2d = _model_new.project3dToPixel(p3d);
+    		int x = round(p2d.x);
+    		int y = round(p2d.y);
+    		if((x>mask.cols-1) || (x<0) || (y>mask.rows-1) || (y<0))
+    			  continue;
+    		float& current_val = mask.at<float>(y,x);
+    		if(point.z < current_val ){
+
+        		mask.at<float>(y,x) = point.z;
+        		int dist_index = int((point.z - 0.5) * 300); //goes till 256cm
+        		if (dist_index > 255) dist_index = 0;
+        		cv::circle(maskRGB, cv::Point(x,y), 1, cv::Scalar(colormap[3*dist_index], colormap[3*dist_index+1], colormap[3*dist_index+2] ), -1);
+
+    		}
+
+//    		maskRGB.at<unsigned char>(y, 3 * x) = point.b;
+//    		maskRGB.at<unsigned char>(y, 3 * x + 1) = point.g;
+//    		maskRGB.at<unsigned char>(y, 3 * x + 2) = point.r;
+		}
+
+
+
+	   std::vector<boost::shared_ptr<cv::Mat> > dilations;
+	   dilations.push_back(boost::make_shared<cv::Mat>(mask));
+
+	   cv::namedWindow("dils", 0);
+	   for (int i = 1 ; i<num_max_dilations; i++){
+		     cv::Mat new_dil;
+		     cv::morphologyEx(*(dilations[i-1]),new_dil,CV_MOP_ERODE , getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(3,3)), cv::Point(-1,-1), 1);
+		     dilations.push_back(boost::make_shared<cv::Mat>(new_dil));
+		     cv::imshow("dils", new_dil);
+				cv::waitKey();
+	   }
+
+
+	   cv::Mat mask_new = cv::Mat::zeros(cv::Size(_cam_info_new->width, _cam_info_new->height), CV_32F);
+	   for (int y = 0; y<mask_new.rows; y++){
+		   for(int x = 0; x<mask_new.cols; x++){
+			   int i = 0;
+			   while( i<dilations.size()){
+				   float& val = dilations[i]->at<float>(y,x);
+				   if (val < numeric_limits<float>::max()){
+					   mask_new.at<float>(y,x) = val;
+					   break;
+				   }
+				   i++;
+			   }
+		   }
+	   }
+
+	   depth_image_new = mask_new;
+
+
+
+
+#if X_OUTPUT
+
+		cv::namedWindow("test", 0);
+		cv::waitKey();
+
+		cv::imshow("test", maskRGB);
+
+		cv::waitKey();
+
+
+		cv::imshow("test", mask_new);
+
+		cv::waitKey();
+
+#endif
+
+
+//		cv::morphologyEx(mask_object_tops,mask_object_tops,CV_MOP_CLOSE , getStructuringElement(cv::MORPH_RECT, cv::Size(3,3)), cv::Point(-1,-1), 3);
+//		cv::dilate(mask_object_tops,mask_object_tops,getStructuringElement(cv::MORPH_RECT, cv::Size(5,5)) );
+//		cv::erode(mask_object_tops, mask_object_tops, cv::Mat(), cv::Point(-1, -1), 3 );
+
+
+
+
+
+
+	}
+
+	bool estimateRigidTransform2DRansacCB(interactive_segmentation_textured::estimateRigid::Request& req, interactive_segmentation_textured::estimateRigid::Response& res){
+
+		std::vector<cv::Point2d> features_old, features_new;
+		printf("from msg features old size %d features new size %d \n", req.features_old.size(), req.features_new.size()); 
+		features_old.reserve(req.features_old.size());
+		features_new.reserve(req.features_new.size());
+		for (int i = 0; i < req.features_old.size(); i++){
+			cv::Point2d p2d(req.features_old[i].x, req.features_old[i].y);
+			features_old.push_back(p2d);
+		}
+
+		for (int i = 0; i < req.features_new.size(); i++){
+			cv::Point2d p2d(req.features_new[i].x, req.features_new[i].y);
+			features_new.push_back(p2d);
+		}
+
+
+
+
+		sensor_msgs::PointCloud2ConstPtr cloud_msg = ros::topic::waitForMessage<sensor_msgs::PointCloud2>(point_cloud_topic, ros::Duration(5.0));
+		pcl::PointCloud<Point>::Ptr cloud(new  pcl::PointCloud<Point>());
+		pcl::fromROSMsg<Point>(*cloud_msg, *cloud);
+
+		cv::Mat new_depth;
+		getDepthImage(cloud, new_depth);
+
+		std::vector<int> inliers;
+		int success = estimateRigidTransform2DRansac(features_old, features_new, last_depth, new_depth, cloud_msg->header.frame_id, inliers, 5.0 );
+
+		res.inliers = inliers;
+		res.success = success;
+
+ 		return true;
+
+	}
+
+
+	int estimateRigidTransform2DRansac(std::vector<cv::Point2d>& features_old, std::vector<cv::Point2d>& features_new,
+			 cv::Mat& depth_image_old,  cv::Mat& depth_image_new, std::string depth_frame, std::vector<int>& inliers, float residual_error ){
+		assert(features_old.size() == features_new.size());
+		pcl::PointCloud<Point> cloud_old_features, cloud_new_features, cloud_old_features_table, cloud_new_features_table;
+		cloud_old_features.points.reserve(features_old.size());
+		cloud_new_features.points.reserve(features_new.size());
+		for (int i=0; i < features_old.size(); i++){
+			cv::Point3d p3d = _model_new.projectPixelTo3dRay(features_old[i]);
+			double z = depth_image_old.at<float>(features_old[i]);
+			assert(p3d.z == 1.0);
+			p3d *= z;
+			Point p(p3d.x, p3d.y, p3d.z);
+			cloud_old_features.points.push_back(p);
+		}
+
+		for (int i=0; i < features_new.size(); i++){
+			cv::Point3d p3d = _model_new.projectPixelTo3dRay(features_new[i]);
+			double z = depth_image_new.at<float>(features_new[i]);
+			assert(p3d.z == 1.0);
+			p3d *= z;
+			Point p(p3d.x, p3d.y, p3d.z);
+			cloud_new_features.points.push_back(p);
+		}
+
+		//transform pointcloud into virtual frame
+		tf::StampedTransform tf_realcam_in_base;
+
+		listener_.waitForTransform(base_frame,  _cam_info_new->header.frame_id , ros::Time(0), ros::Duration(5.0));
+		listener_.lookupTransform(base_frame,  _cam_info_new->header.frame_id, ros::Time(0), tf_realcam_in_base);
+
+		tf::Transform full_tf = tf_virtual_cam.inverse() * tf_virtual_cam_transl.inverse() * tf_realcam_in_base;
+		Eigen::Affine3d transform_eigen;
+		tf::transformTFToEigen(full_tf,transform_eigen );
+		Eigen::Matrix4d transform_eigen3(transform_eigen.matrix());
+		Eigen::Matrix4f transform_eigen3f = transform_eigen3.cast<float>();
+
+
+		pcl::transformPointCloud(  cloud_old_features, cloud_old_features_table, transform_eigen3f );
+		pcl::transformPointCloud(  cloud_new_features, cloud_new_features_table, transform_eigen3f );
+
+
+		//project
+
+
+		cv::Mat old_features_transformed (features_old.size(), 1, CV_32FC2);
+		cv::Mat new_features_transformed (features_new.size(), 1, CV_32FC2);
+
+		vector<Point, Eigen::aligned_allocator<Point> >::iterator iter;
+		int i = 0;
+		for (iter = cloud_old_features_table.points.begin(); iter != cloud_old_features_table.points.end(); ++iter){
+			Point& point = *iter;
+
+				if (isnan(point.x) || isnan(point.y) || isnan(point.z))
+					continue;
+			cv::Point3d p3d(point.x, point.y, point.z);
+			cv::Point2d p2d;
+			p2d = _model_new.project3dToPixel(p3d);
+	//		old_features_transformed.at<float>(i,0,0) = p2d.x;
+		//	old_features_transformed.at<float>(i,0,1) = p2d.y;
+			old_features_transformed.ptr<float>()[i * 2 ] = p2d.x;
+			old_features_transformed.ptr<float>()[i * 2 +1] = p2d.y;
+			i++;
+		}
+		i = 0;
+
+		for (iter = cloud_new_features_table.points.begin(); iter != cloud_new_features_table.points.end(); ++iter){
+			Point& point = *iter;
+
+				if (isnan(point.x) || isnan(point.y) || isnan(point.z))
+					continue;
+			cv::Point3d p3d(point.x, point.y, point.z);
+			cv::Point2d p2d;
+			p2d = _model_new.project3dToPixel(p3d);
+	//		new_features_transformed.at<float>(i,0,0) = p2d.x;
+//			new_features_transformed.at<float>(i,0,1) = p2d.y;
+			new_features_transformed.ptr<float>()[i * 2] = p2d.x;
+			new_features_transformed.ptr<float>()[i *2 +1] = p2d.y;
+			i++;
+		}
+
+		cv::Mat M;
+
+		int success = cv::estimateRigidTransform(old_features_transformed, new_features_transformed, M, false, inliers);
+		if (!success){
+			ROS_ERROR("rigid estimation failed!!!!!!!!");
+		}
+
+		return success;
+
+	}
+
+
+
+};
+
+
+unsigned char DepthTransfomer::colormap[768] =
+  { 150, 150, 150,
+    107, 0, 12,
+    106, 0, 18,
+    105, 0, 24,
+    103, 0, 30,
+    102, 0, 36,
+    101, 0, 42,
+    99, 0, 48,
+    98, 0, 54,
+    97, 0, 60,
+    96, 0, 66,
+    94, 0, 72,
+    93, 0, 78,
+    92, 0, 84,
+    91, 0, 90,
+    89, 0, 96,
+    88, 0, 102,
+    87, 0, 108,
+    85, 0, 114,
+    84, 0, 120,
+    83, 0, 126,
+    82, 0, 131,
+    80, 0, 137,
+    79, 0, 143,
+    78, 0, 149,
+    77, 0, 155,
+    75, 0, 161,
+    74, 0, 167,
+    73, 0, 173,
+    71, 0, 179,
+    70, 0, 185,
+    69, 0, 191,
+    68, 0, 197,
+    66, 0, 203,
+    65, 0, 209,
+    64, 0, 215,
+    62, 0, 221,
+    61, 0, 227,
+    60, 0, 233,
+    59, 0, 239,
+    57, 0, 245,
+    56, 0, 251,
+    55, 0, 255,
+    54, 0, 255,
+    52, 0, 255,
+    51, 0, 255,
+    50, 0, 255,
+    48, 0, 255,
+    47, 0, 255,
+    46, 0, 255,
+    45, 0, 255,
+    43, 0, 255,
+    42, 0, 255,
+    41, 0, 255,
+    40, 0, 255,
+    38, 0, 255,
+    37, 0, 255,
+    36, 0, 255,
+    34, 0, 255,
+    33, 0, 255,
+    32, 0, 255,
+    31, 0, 255,
+    29, 0, 255,
+    28, 0, 255,
+    27, 0, 255,
+    26, 0, 255,
+    24, 0, 255,
+    23, 0, 255,
+    22, 0, 255,
+    20, 0, 255,
+    19, 0, 255,
+    18, 0, 255,
+    17, 0, 255,
+    15, 0, 255,
+    14, 0, 255,
+    13, 0, 255,
+    11, 0, 255,
+    10, 0, 255,
+    9, 0, 255,
+    8, 0, 255,
+    6, 0, 255,
+    5, 0, 255,
+    4, 0, 255,
+    3, 0, 255,
+    1, 0, 255,
+    0, 4, 255,
+    0, 10, 255,
+    0, 16, 255,
+    0, 22, 255,
+    0, 28, 255,
+    0, 34, 255,
+    0, 40, 255,
+    0, 46, 255,
+    0, 52, 255,
+    0, 58, 255,
+    0, 64, 255,
+    0, 70, 255,
+    0, 76, 255,
+    0, 82, 255,
+    0, 88, 255,
+    0, 94, 255,
+    0, 100, 255,
+    0, 106, 255,
+    0, 112, 255,
+    0, 118, 255,
+    0, 124, 255,
+    0, 129, 255,
+    0, 135, 255,
+    0, 141, 255,
+    0, 147, 255,
+    0, 153, 255,
+    0, 159, 255,
+    0, 165, 255,
+    0, 171, 255,
+    0, 177, 255,
+    0, 183, 255,
+    0, 189, 255,
+    0, 195, 255,
+    0, 201, 255,
+    0, 207, 255,
+    0, 213, 255,
+    0, 219, 255,
+    0, 225, 255,
+    0, 231, 255,
+    0, 237, 255,
+    0, 243, 255,
+    0, 249, 255,
+    0, 255, 255,
+    0, 255, 249,
+    0, 255, 243,
+    0, 255, 237,
+    0, 255, 231,
+    0, 255, 225,
+    0, 255, 219,
+    0, 255, 213,
+    0, 255, 207,
+    0, 255, 201,
+    0, 255, 195,
+    0, 255, 189,
+    0, 255, 183,
+    0, 255, 177,
+    0, 255, 171,
+    0, 255, 165,
+    0, 255, 159,
+    0, 255, 153,
+    0, 255, 147,
+    0, 255, 141,
+    0, 255, 135,
+    0, 255, 129,
+    0, 255, 124,
+    0, 255, 118,
+    0, 255, 112,
+    0, 255, 106,
+    0, 255, 100,
+    0, 255, 94,
+    0, 255, 88,
+    0, 255, 82,
+    0, 255, 76,
+    0, 255, 70,
+    0, 255, 64,
+    0, 255, 58,
+    0, 255, 52,
+    0, 255, 46,
+    0, 255, 40,
+    0, 255, 34,
+    0, 255, 28,
+    0, 255, 22,
+    0, 255, 16,
+    0, 255, 10,
+    0, 255, 4,
+    2, 255, 0,
+    8, 255, 0,
+    14, 255, 0,
+    20, 255, 0,
+    26, 255, 0,
+    32, 255, 0,
+    38, 255, 0,
+    44, 255, 0,
+    50, 255, 0,
+    56, 255, 0,
+    62, 255, 0,
+    68, 255, 0,
+    74, 255, 0,
+    80, 255, 0,
+    86, 255, 0,
+    92, 255, 0,
+    98, 255, 0,
+    104, 255, 0,
+    110, 255, 0,
+    116, 255, 0,
+    122, 255, 0,
+    128, 255, 0,
+    133, 255, 0,
+    139, 255, 0,
+    145, 255, 0,
+    151, 255, 0,
+    157, 255, 0,
+    163, 255, 0,
+    169, 255, 0,
+    175, 255, 0,
+    181, 255, 0,
+    187, 255, 0,
+    193, 255, 0,
+    199, 255, 0,
+    205, 255, 0,
+    211, 255, 0,
+    217, 255, 0,
+    223, 255, 0,
+    229, 255, 0,
+    235, 255, 0,
+    241, 255, 0,
+    247, 255, 0,
+    253, 255, 0,
+    255, 251, 0,
+    255, 245, 0,
+    255, 239, 0,
+    255, 233, 0,
+    255, 227, 0,
+    255, 221, 0,
+    255, 215, 0,
+    255, 209, 0,
+    255, 203, 0,
+    255, 197, 0,
+    255, 191, 0,
+    255, 185, 0,
+    255, 179, 0,
+    255, 173, 0,
+    255, 167, 0,
+    255, 161, 0,
+    255, 155, 0,
+    255, 149, 0,
+    255, 143, 0,
+    255, 137, 0,
+    255, 131, 0,
+    255, 126, 0,
+    255, 120, 0,
+    255, 114, 0,
+    255, 108, 0,
+    255, 102, 0,
+    255, 96, 0,
+    255, 90, 0,
+    255, 84, 0,
+    255, 78, 0,
+    255, 72, 0,
+    255, 66, 0,
+    255, 60, 0,
+    255, 54, 0,
+    255, 48, 0,
+    255, 42, 0,
+    255, 36, 0,
+    255, 30, 0,
+    255, 24, 0,
+    255, 18, 0,
+    255, 12, 0,
+    255,  6, 0,
+    255,  0, 0,
+  };
+
+int main(int argc, char** argv){
+
+	ros::init(argc, argv, "depth_transformer_node");
+//	ros::NodeHandle nh;
+//	ros::Duration(1.5).sleep();
+
+	DepthTransfomer hcs;
+	ros::spin();
+
+	return 0;
+}
+

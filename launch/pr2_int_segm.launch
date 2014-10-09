@@ -1,0 +1,10 @@
+<launch>
+<!-- roslaunch openni_node.launch -->
+<!-- <node name="image_view" pkg="image_view" type="image_view" args="image:=/kinect/rgb/image_color" /> -->
+<include file="$(find pr2_teleop)/teleop_joystick.launch"/> 
+ <include file="$(find simple_robot_control)/launch/simple_robot_control_without_collision_checking.launch"/>
+ <include file="$(find interactive_segmentation_textured)/launch/prosilica.launch"/>
+ <include file="$(find interactive_segmentation_textured)/launch/camera_self_filter_server_prosilica.launch"/>
+<!-- <node name="find_corners" pkg="interactive_segmentation_textured" type="find_corners.py" /> -->
+<!-- <node name="find_poke_point" pkg="interactive_segmentation_textured" type="find_poke_point" /> -->
+</launch>

@@ -1,0 +1,4 @@
+---
+Header header
+geometry_msgs/Pose[] corner_poses
+geometry_msgs/Pose[] corner_poses_convex

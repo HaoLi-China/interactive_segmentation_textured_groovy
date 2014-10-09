@@ -1,0 +1,17 @@
+<launch>
+<group ns="prosilica">
+    <node name="image_proc" pkg="image_proc" type="image_proc" />
+  </group>
+  
+  
+ 	<node name="$(anon dynparam)" pkg="dynamic_reconfigure" type="dynparam" args="set_from_parameters prosilica_driver">
+    	<param name="trigger_mode" type="string" value="streaming" />
+    	<param name="auto_exposure" type="bool" value="false" />
+    	<param name="auto_gain" type="bool" value="false" />
+    	<param name="auto_whitebalance" type="bool" value="true" />
+    	<param name="exposure" type="double" value="0.1" />
+    	<param name="gain" type="int" value="7" />
+
+    </node>
+    
+</launch>

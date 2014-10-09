@@ -1,0 +1,24 @@
+<package>
+  <description brief="interactive_segmentation_textured">
+     interactive_segmentation_textured segments objects in the cluttered scenes
+     by letting the user or the robot interact with 
+     the objects and tracking of 2D features.
+  </description>
+  <author>Dejan Pangercic, Christian Bersch, Sarah Osentoski</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/pr2_interactive_segmentation</url>
+  <depend package="roscpp"/>
+  <depend package="simple_robot_control"/>
+  <depend package="cv_bridge"/>
+  <depend package="camera_self_filter"/>
+  <depend package="eigen_conversions"/>
+  <depend package="pcl"/>
+  <depend package="pcl_ros"/>
+  <depend package="image_geometry"/>
+  <depend package="geometry_msgs"/>
+
+  <rosdep name="eigen" />
+</package>
+
+

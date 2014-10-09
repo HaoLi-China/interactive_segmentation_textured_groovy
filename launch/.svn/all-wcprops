@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 120
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/launch
+END
+openCV_to_ros.launch
+K 25
+svn:wc:ra_dav:version-url
+V 141
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/launch/openCV_to_ros.launch
+END
+camera_self_filter_server_prosilica.launch
+K 25
+svn:wc:ra_dav:version-url
+V 163
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/launch/camera_self_filter_server_prosilica.launch
+END
+camera_self_filter_kinect_head.launch
+K 25
+svn:wc:ra_dav:version-url
+V 158
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/launch/camera_self_filter_kinect_head.launch
+END
+prosilica.launch
+K 25
+svn:wc:ra_dav:version-url
+V 137
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/launch/prosilica.launch
+END
+pr2_int_segm.launch
+K 25
+svn:wc:ra_dav:version-url
+V 140
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/launch/pr2_int_segm.launch
+END
+camera_self_filter_server_kinect_head.launch
+K 25
+svn:wc:ra_dav:version-url
+V 165
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/launch/camera_self_filter_server_kinect_head.launch
+END
+pr2_int_segm_without_arms.launch
+K 25
+svn:wc:ra_dav:version-url
+V 153
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/launch/pr2_int_segm_without_arms.launch
+END

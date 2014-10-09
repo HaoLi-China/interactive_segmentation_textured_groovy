@@ -1,0 +1,5 @@
+geometry_msgs/Point[] features_old
+geometry_msgs/Point[] features_new
+---
+int32[] inliers
+int32 success

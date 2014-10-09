@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 117
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/srv
+END
+depthImage.srv
+K 25
+svn:wc:ra_dav:version-url
+V 132
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/srv/depthImage.srv
+END
+computeICP.srv
+K 25
+svn:wc:ra_dav:version-url
+V 132
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/srv/computeICP.srv
+END
+cornerFind.srv
+K 25
+svn:wc:ra_dav:version-url
+V 132
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/srv/cornerFind.srv
+END
+estimateRigid.srv
+K 25
+svn:wc:ra_dav:version-url
+V 135
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/srv/estimateRigid.srv
+END
+cornerPokePoseFind.srv
+K 25
+svn:wc:ra_dav:version-url
+V 140
+/p/bosch-ros-pkg/code/!svn/ver/1590/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/srv/cornerPokePoseFind.srv
+END
