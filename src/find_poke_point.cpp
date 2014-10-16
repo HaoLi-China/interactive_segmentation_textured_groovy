@@ -60,8 +60,8 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include <interactive_segmentation_textured/cornerPokePoseFind.h>
-#include <interactive_segmentation_textured/cornerFind.h>
+#include <interactive_segmentation_textured_groovy/cornerPokePoseFind.h>
+#include <interactive_segmentation_textured_groovy/cornerFind.h>
 #include <boost/foreach.hpp>
 
 
@@ -216,7 +216,7 @@
 
 		printf("test5\n");		
 
-		_corner_finder = _nh.serviceClient<interactive_segmentation_textured::cornerFind>("find_corners");
+		_corner_finder = _nh.serviceClient<interactive_segmentation_textured_groovy::cornerFind>("find_corners");
 		if (!_corner_finder.waitForExistence(ros::Duration(5.0))){
 			ROS_ERROR("find_corners service not found");
 			exit(1);
@@ -331,7 +331,7 @@
 
 
 
-bool getPokePointServiceCB(interactive_segmentation_textured::cornerPokePoseFind::Request& req, interactive_segmentation_textured::cornerPokePoseFind::Response& res){
+bool getPokePointServiceCB(interactive_segmentation_textured_groovy::cornerPokePoseFind::Request& req, interactive_segmentation_textured_groovy::cornerPokePoseFind::Response& res){
 	cv::Mat top_view_rgb;
 	printf("test6\n");
 	getTopView(top_view_rgb);
@@ -341,7 +341,7 @@ bool getPokePointServiceCB(interactive_segmentation_textured::cornerPokePoseFind
 
 
 	printf("test7\n");
-	interactive_segmentation_textured::cornerFind::Response res_corner;
+	interactive_segmentation_textured_groovy::cornerFind::Response res_corner;
 	pcl::PointCloud<pcl::PointNormal> grasps;
 	if (random_pushing!=0)
 	{
@@ -847,8 +847,8 @@ bool getTopView(cv::Mat& topview){
 
 //	function to get the corners from another service
 
-	bool getCornersToPush(cv::Mat& topview, interactive_segmentation_textured::cornerFind::Response& res){
-		interactive_segmentation_textured::cornerFind::Request req;
+	bool getCornersToPush(cv::Mat& topview, interactive_segmentation_textured_groovy::cornerFind::Response& res){
+		interactive_segmentation_textured_groovy::cornerFind::Request req;
 		IplImage temp(topview);
 	//cv::Mat ipl2mat(temp);
 		cv::Mat ipl2mat(cv::cvarrToMat(&temp));
@@ -938,7 +938,7 @@ bool getTopView(cv::Mat& topview){
 }
 
 
-bool get3dPoints(const interactive_segmentation_textured::cornerFind::Response& res, pcl::PointCloud<pcl::PointNormal>& grasp_points){
+bool get3dPoints(const interactive_segmentation_textured_groovy::cornerFind::Response& res, pcl::PointCloud<pcl::PointNormal>& grasp_points){
 	Eigen::Vector3f table_normal(coefficients->values[0], coefficients->values[1], coefficients->values[2]);
 
 	//create Points

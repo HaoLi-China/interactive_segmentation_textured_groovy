@@ -5,7 +5,7 @@
 #include "std_msgs/String.h"
 #include <sstream>
 
-#include <interactive_segmentation_textured/cornerPokePoseFind.h>
+#include <interactive_segmentation_textured_groovy/cornerPokePoseFind.h>
 
 int main (int argc, char **argv)
 {
@@ -15,9 +15,9 @@ int main (int argc, char **argv)
 
 printf("11111111111111\n");
 
-    ros::ServiceClient client_poke = n.serviceClient<interactive_segmentation_textured::cornerPokePoseFind>("findPokePose");
+    ros::ServiceClient client_poke = n.serviceClient<interactive_segmentation_textured_groovy::cornerPokePoseFind>("findPokePose");
 printf("22222222222222\n");
-    interactive_segmentation_textured::cornerPokePoseFind srv_poke;
+    interactive_segmentation_textured_groovy::cornerPokePoseFind srv_poke;
 printf("33333333333333\n");
 
     if (client_poke.call(srv_poke))
