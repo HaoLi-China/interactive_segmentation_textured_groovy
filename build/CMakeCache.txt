@@ -158,8 +158,8 @@ CMAKE_SKIP_RPATH:BOOL=NO
 //Path to a program.
 CMAKE_STRIP:FILEPATH=/usr/bin/strip
 
-//The CMake toolchain file
-CMAKE_TOOLCHAIN_FILE:FILEPATH=/opt/ros/groovy/share/ros/core/rosbuild/rostoolchain.cmake
+//No help, variable specified on the command line.
+CMAKE_TOOLCHAIN_FILE:UNINITIALIZED=/opt/ros/groovy/share/ros/core/rosbuild/rostoolchain.cmake
 
 //If true, cmake will use relative paths in makefiles and projects.
 CMAKE_USE_RELATIVE_PATHS:BOOL=OFF
@@ -202,21 +202,6 @@ GTEST_MAIN_LIBRARY:FILEPATH=GTEST_MAIN_LIBRARY-NOTFOUND
 
 //Path to a library.
 GTEST_MAIN_LIBRARY_DEBUG:FILEPATH=GTEST_MAIN_LIBRARY_DEBUG-NOTFOUND
-
-//Path to a program.
-Java_JAR_EXECUTABLE:FILEPATH=/usr/bin/jar
-
-//Path to a program.
-Java_JAVAC_EXECUTABLE:FILEPATH=/usr/bin/javac
-
-//Path to a program.
-Java_JAVADOC_EXECUTABLE:FILEPATH=/usr/bin/javadoc
-
-//Path to a program.
-Java_JAVAH_EXECUTABLE:FILEPATH=/usr/bin/javah
-
-//Path to a program.
-Java_JAVA_EXECUTABLE:FILEPATH=/usr/bin/java
 
 //Single output directory for building all libraries.
 LIBRARY_OUTPUT_PATH:PATH=
@@ -270,13 +255,13 @@ UBUNTU_PRECISE:BOOL=TRUE
 USERCONFIG:FILEPATH=USERCONFIG-NOTFOUND
 
 //Path to a file.
-_CATKIN_GTEST_INCLUDE:FILEPATH=_CATKIN_GTEST_INCLUDE-NOTFOUND
+_CATKIN_GTEST_INCLUDE:FILEPATH=/usr/include/gtest/gtest.h
 
 //Path to a file.
 _CATKIN_GTEST_SRC:FILEPATH=/usr/src/gtest/src/gtest.cc
 
 //Path to a file.
-_file_name:FILEPATH=/home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/src/c_track_features_with_grasping.cpp
+_file_name:FILEPATH=/home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/src/my_client.cpp
 
 //The directory containing a CMake configuration file for catkin.
 catkin_DIR:PATH=/opt/ros/groovy/share/catkin/cmake
@@ -478,14 +463,12 @@ CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
 EIGEN_INCLUDE_DIR-ADVANCED:INTERNAL=1
 //Details about finding Eigen
 FIND_PACKAGE_MESSAGE_DETAILS_Eigen:INTERNAL=[/usr/include/eigen3][v()]
-//Details about finding Java
-FIND_PACKAGE_MESSAGE_DETAILS_Java:INTERNAL=[/usr/bin/java][/usr/bin/jar][/usr/bin/javac][/usr/bin/javah][/usr/bin/javadoc][v1.6.0.31()]
 //Details about finding PythonInterp
 FIND_PACKAGE_MESSAGE_DETAILS_PythonInterp:INTERNAL=[/usr/bin/python][v2.7.3()]
 //Details about finding Threads
 FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
 GTEST_FROM_SOURCE_FOUND:INTERNAL=TRUE
-GTEST_FROM_SOURCE_INCLUDE_DIRS:INTERNAL=
+GTEST_FROM_SOURCE_INCLUDE_DIRS:INTERNAL=/usr/include
 GTEST_FROM_SOURCE_LIBRARIES:INTERNAL=gtest
 GTEST_FROM_SOURCE_LIBRARY_DIRS:INTERNAL=/home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/build/gtest
 GTEST_FROM_SOURCE_MAIN_LIBRARIES:INTERNAL=gtest_main
@@ -499,16 +482,6 @@ GTEST_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
 GTEST_MAIN_LIBRARY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: GTEST_MAIN_LIBRARY_DEBUG
 GTEST_MAIN_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: Java_JAR_EXECUTABLE
-Java_JAR_EXECUTABLE-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: Java_JAVAC_EXECUTABLE
-Java_JAVAC_EXECUTABLE-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: Java_JAVADOC_EXECUTABLE
-Java_JAVADOC_EXECUTABLE-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: Java_JAVAH_EXECUTABLE
-Java_JAVAH_EXECUTABLE-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: Java_JAVA_EXECUTABLE
-Java_JAVA_EXECUTABLE-ADVANCED:INTERNAL=1
 PC_EIGEN_CFLAGS:INTERNAL=-I/usr/include/eigen3
 PC_EIGEN_CFLAGS_I:INTERNAL=
 PC_EIGEN_CFLAGS_OTHER:INTERNAL=
@@ -553,20 +526,19 @@ PYTHON_EXECUTABLE-ADVANCED:INTERNAL=1
 PYTHON_INSTALL_DIR:INTERNAL=lib/python2.7/dist-packages
 __pkg_config_checked_PC_EIGEN:INTERNAL=1
 _rosbuild_EXPORTS:INTERNAL=
-_rosbuild_cached_flag_time:INTERNAL=1412831647.58
-_roslang_LANGS:INTERNAL=roseus;roslisp;rosjava_jni
+_rosbuild_cached_flag_time:INTERNAL=1412949824.12
+_roslang_LANGS:INTERNAL=roseus;roslisp
 _rospack_deps_manifests_invoke_result:INTERNAL=/opt/ros/groovy/share/cpp_common/package.xml;/opt/ros/groovy/share/rostime/package.xml;/opt/ros/groovy/share/roscpp_traits/package.xml;/opt/ros/groovy/share/roscpp_serialization/package.xml;/opt/ros/groovy/share/genmsg/package.xml;/opt/ros/groovy/share/genpy/package.xml;/opt/ros/groovy/share/message_runtime/package.xml;/opt/ros/groovy/share/rosconsole/package.xml;/opt/ros/groovy/share/std_msgs/package.xml;/opt/ros/groovy/share/rosgraph_msgs/package.xml;/opt/ros/groovy/share/xmlrpcpp/package.xml;/opt/ros/groovy/share/roscpp/package.xml;/opt/ros/groovy/share/rosgraph/package.xml;/opt/ros/groovy/share/catkin/package.xml;/opt/ros/groovy/share/rospack/package.xml;/opt/ros/groovy/share/roslib/package.xml;/opt/ros/groovy/share/rospy/package.xml;/opt/ros/groovy/share/gencpp/package.xml;/opt/ros/groovy/share/genlisp/package.xml;/opt/ros/groovy/share/message_generation/package.xml;/opt/ros/groovy/share/actionlib_msgs/package.xml;/opt/ros/groovy/share/rosclean/package.xml;/opt/ros/groovy/share/rosmaster/package.xml;/opt/ros/groovy/share/rosout/package.xml;/opt/ros/groovy/share/rosparam/package.xml;/opt/ros/groovy/share/roslaunch/package.xml;/opt/ros/groovy/share/rosunit/package.xml;/opt/ros/groovy/share/rostest/package.xml;/opt/ros/groovy/share/actionlib/package.xml;/opt/ros/groovy/share/geometry_msgs/package.xml;/opt/ros/groovy/share/sensor_msgs/package.xml;/opt/ros/groovy/share/trajectory_msgs/package.xml;/opt/ros/groovy/share/message_filters/package.xml;/opt/ros/groovy/share/tf/package.xml;/opt/ros/groovy/stacks/arm_navigation/arm_navigation_msgs/manifest.xml;/opt/ros/groovy/stacks/arm_navigation/kinematics_msgs/manifest.xml;/opt/ros/groovy/stacks/pr2_controllers/pr2_controllers_msgs/manifest.xml;/opt/ros/groovy/share/orocos_kdl/package.xml;/opt/ros/groovy/share/kdl_conversions/package.xml;/opt/ros/groovy/share/tf_conversions/package.xml;/opt/ros/groovy/stacks/pr2_common_actions/pr2_common_action_msgs/manifest.xml;/home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_manipulation_utils/simple_robot_control/manifest.xml;/opt/ros/groovy/share/opencv2/package.xml;/opt/ros/groovy/share/cv_bridge/package.xml;/opt/ros/groovy/share/image_geometry/package.xml;/opt/ros/groovy/share/console_bridge/package.xml;/opt/ros/groovy/share/class_loader/package.xml;/opt/ros/groovy/share/pluginlib/package.xml;/opt/ros/groovy/share/image_transport/package.xml;/opt/ros/groovy/share/urdfdom_headers/package.xml;/opt/ros/groovy/share/collada_parser/package.xml;/opt/ros/groovy/share/rosconsole_bridge/package.xml;/opt/ros/groovy/share/urdfdom/package.xml;/opt/ros/groovy/share/urdf/package.xml;/opt/ros/groovy/stacks/bullet/manifest.xml;/opt/ros/groovy/share/resource_retriever/package.xml;/home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_image_proc/camera_self_filter/manifest.xml;/opt/ros/groovy/share/eigen_conversions/package.xml;/opt/ros/groovy/share/flann/package.xml;/opt/ros/groovy/share/topic_tools/package.xml;/opt/ros/groovy/share/rosbag/package.xml;/opt/ros/groovy/share/pcl_msgs/package.xml;/opt/ros/groovy/share/pcl/package.xml;/opt/ros/groovy/share/rosmsg/package.xml;/opt/ros/groovy/share/rosservice/package.xml;/opt/ros/groovy/share/dynamic_reconfigure/package.xml;/opt/ros/groovy/share/bond/package.xml;/opt/ros/groovy/share/smclib/package.xml;/opt/ros/groovy/share/bondcpp/package.xml;/opt/ros/groovy/share/nodelet/package.xml;/opt/ros/groovy/share/nodelet_topic_tools/package.xml;/opt/ros/groovy/share/pcl_ros/package.xml
 _rospack_msgsrv_gen_invoke_result:INTERNAL=/opt/ros/groovy/stacks/arm_navigation/arm_navigation_msgs/msg_gen/generated;/opt/ros/groovy/stacks/arm_navigation/arm_navigation_msgs/srv_gen/generated;/opt/ros/groovy/stacks/arm_navigation/kinematics_msgs/msg_gen/generated;/opt/ros/groovy/stacks/arm_navigation/kinematics_msgs/srv_gen/generated;/opt/ros/groovy/stacks/pr2_controllers/pr2_controllers_msgs/msg_gen/generated;/opt/ros/groovy/stacks/pr2_controllers/pr2_controllers_msgs/srv_gen/generated;/opt/ros/groovy/stacks/pr2_common_actions/pr2_common_action_msgs/msg_gen/generated;/home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_manipulation_utils/simple_robot_control/srv_gen/generated;/home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_image_proc/camera_self_filter/srv_gen/generated
 interactive_segmentation_textured_CFLAGS_OTHER:INTERNAL=-DBT_USE_DOUBLE_PRECISION -DBT_EULER_DEFAULT_ZYX
 interactive_segmentation_textured_INCLUDEDIR:INTERNAL=
 interactive_segmentation_textured_INCLUDE_DIRS:INTERNAL=/home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_manipulation_utils/simple_robot_control/include;/home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_manipulation_utils/simple_robot_control/srv_gen/cpp/include;/opt/ros/groovy/stacks/arm_navigation/kinematics_msgs/include;/opt/ros/groovy/stacks/arm_navigation/kinematics_msgs/msg_gen/cpp/include;/opt/ros/groovy/stacks/arm_navigation/kinematics_msgs/srv_gen/cpp/include;/opt/ros/groovy/stacks/arm_navigation/arm_navigation_msgs/include;/opt/ros/groovy/stacks/arm_navigation/arm_navigation_msgs/msg_gen/cpp/include;/opt/ros/groovy/stacks/arm_navigation/arm_navigation_msgs/srv_gen/cpp/include;/opt/ros/groovy/stacks/pr2_controllers/pr2_controllers_msgs/msg_gen/cpp/include;/opt/ros/groovy/stacks/pr2_controllers/pr2_controllers_msgs/srv_gen/cpp/include;/opt/ros/groovy/stacks/pr2_common_actions/pr2_common_action_msgs/msg/cpp;/opt/ros/groovy/stacks/pr2_common_actions/pr2_common_action_msgs/srv/cpp;/opt/ros/groovy/stacks/pr2_common_actions/pr2_common_action_msgs/msg_gen/cpp/include;/home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_image_proc/camera_self_filter/srv_gen/cpp/include;/opt/ros/groovy/stacks/bullet/include;/opt/ros/groovy/include;/opt/ros/groovy/include/opencv;/opt/ros/groovy/include/pcl-1.6;/usr/include/eigen3;/usr/include/vtk-5.8;/usr/include/qhull
 interactive_segmentation_textured_LDFLAGS_OTHER:INTERNAL=-Wl,-rpath,/home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_manipulation_utils/simple_robot_control/lib -Wl,-rpath,/opt/ros/groovy/stacks/bullet/lib
-interactive_segmentation_textured_LIBRARIES:INTERNAL=simple_robot_control;actionlib;tf_conversions;kdl_conversions;cv_bridge;:/opt/ros/groovy/lib/libopencv_videostab.so.2.4.9;:/opt/ros/groovy/lib/libopencv_video.so.2.4.9;:/opt/ros/groovy/lib/libopencv_superres.so.2.4.9;:/opt/ros/groovy/lib/libopencv_stitching.so.2.4.9;:/opt/ros/groovy/lib/libopencv_photo.so.2.4.9;:/opt/ros/groovy/lib/libopencv_objdetect.so.2.4.9;:/opt/ros/groovy/lib/libopencv_nonfree.so.2.4.9;:/opt/ros/groovy/lib/libopencv_ml.so.2.4.9;:/opt/ros/groovy/lib/libopencv_legacy.so.2.4.9;:/opt/ros/groovy/lib/libopencv_imgproc.so.2.4.9;:/opt/ros/groovy/lib/libopencv_highgui.so.2.4.9;:/opt/ros/groovy/lib/libopencv_gpu.so.2.4.9;:/opt/ros/groovy/lib/libopencv_flann.so.2.4.9;:/opt/ros/groovy/lib/libopencv_features2d.so.2.4.9;:/opt/ros/groovy/lib/libopencv_core.so.2.4.9;:/opt/ros/groovy/lib/libopencv_contrib.so.2.4.9;:/opt/ros/groovy/lib/libopencv_calib3d.so.2.4.9;image_geometry;:/opt/ros/groovy/lib/libopencv_calib3d.so;:/opt/ros/groovy/lib/libopencv_contrib.so;:/opt/ros/groovy/lib/libopencv_core.so;:/opt/ros/groovy/lib/libopencv_features2d.so;:/opt/ros/groovy/lib/libopencv_flann.so;:/opt/ros/groovy/lib/libopencv_gpu.so;:/opt/ros/groovy/lib/libopencv_highgui.so;:/opt/ros/groovy/lib/libopencv_imgproc.so;:/opt/ros/groovy/lib/libopencv_legacy.so;:/opt/ros/groovy/lib/libopencv_ml.so;:/opt/ros/groovy/lib/libopencv_nonfree.so;:/opt/ros/groovy/lib/libopencv_objdetect.so;:/opt/ros/groovy/lib/libopencv_photo.so;:/opt/ros/groovy/lib/libopencv_stitching.so;:/opt/ros/groovy/lib/libopencv_superres.so;:/opt/ros/groovy/lib/libopencv_video.so;:/opt/ros/groovy/lib/libopencv_videostab.so;image_transport;tinyxml;class_loader;:/usr/lib/libPocoFoundation.so;dl;roslib;opencv_calib3d;opencv_contrib;opencv_core;opencv_features2d;opencv_flann;opencv_gpu;opencv_highgui;opencv_imgproc;opencv_legacy;opencv_ml;opencv_nonfree;opencv_objdetect;opencv_photo;opencv_stitching;opencv_ts;opencv_video;opencv_videostab;urdf;urdfdom_model;urdfdom_model_state;urdfdom_sensor;urdfdom_world;collada_parser;rosconsole_bridge;console_bridge;BulletDynamics;BulletCollision;LinearMath;resource_retriever;eigen_conversions;orocos-kdl;pcl_ros_tf;pcl_ros_io;pcl_ros_filters;:/usr/lib/libboost_iostreams-mt.so;:/opt/ros/groovy/lib/libpcl_common.so;:/opt/ros/groovy/lib/libpcl_kdtree.so;:/opt/ros/groovy/lib/libpcl_octree.so;:/opt/ros/groovy/lib/libpcl_search.so;:/opt/ros/groovy/lib/libpcl_sample_consensus.so;:/opt/ros/groovy/lib/libpcl_io.so;:/opt/ros/groovy/lib/libpcl_features.so;:/opt/ros/groovy/lib/libpcl_filters.so;:/opt/ros/groovy/lib/libpcl_keypoints.so;:/usr/lib/libqhull.so;:/opt/ros/groovy/lib/libpcl_surface.so;:/opt/ros/groovy/lib/libpcl_registration.so;:/opt/ros/groovy/lib/libpcl_segmentation.so;:/opt/ros/groovy/lib/libpcl_visualization.so;:/opt/ros/groovy/lib/libpcl_tracking.so;tf;message_filters;roscpp;:/usr/lib/libboost_signals-mt.so;:/usr/lib/libboost_filesystem-mt.so;rosconsole;:/usr/lib/libboost_regex-mt.so;:/usr/lib/liblog4cxx.so;xmlrpcpp;roscpp_serialization;rostime;:/usr/lib/libboost_date_time-mt.so;:/usr/lib/libboost_system-mt.so;:/usr/lib/libboost_thread-mt.so;pthread;cpp_common
+interactive_segmentation_textured_LIBRARIES:INTERNAL=simple_robot_control;actionlib;tf_conversions;kdl_conversions;cv_bridge;image_geometry;:/opt/ros/groovy/lib/libopencv_videostab.so.2.4.9;:/opt/ros/groovy/lib/libopencv_video.so.2.4.9;:/opt/ros/groovy/lib/libopencv_superres.so.2.4.9;:/opt/ros/groovy/lib/libopencv_stitching.so.2.4.9;:/opt/ros/groovy/lib/libopencv_photo.so.2.4.9;:/opt/ros/groovy/lib/libopencv_objdetect.so.2.4.9;:/opt/ros/groovy/lib/libopencv_nonfree.so.2.4.9;:/opt/ros/groovy/lib/libopencv_ml.so.2.4.9;:/opt/ros/groovy/lib/libopencv_legacy.so.2.4.9;:/opt/ros/groovy/lib/libopencv_imgproc.so.2.4.9;:/opt/ros/groovy/lib/libopencv_highgui.so.2.4.9;:/opt/ros/groovy/lib/libopencv_gpu.so.2.4.9;:/opt/ros/groovy/lib/libopencv_flann.so.2.4.9;:/opt/ros/groovy/lib/libopencv_features2d.so.2.4.9;:/opt/ros/groovy/lib/libopencv_core.so.2.4.9;:/opt/ros/groovy/lib/libopencv_contrib.so.2.4.9;:/opt/ros/groovy/lib/libopencv_calib3d.so.2.4.9;image_transport;tinyxml;class_loader;:/usr/lib/libPocoFoundation.so;dl;roslib;opencv_calib3d;opencv_contrib;opencv_core;opencv_features2d;opencv_flann;opencv_gpu;opencv_highgui;opencv_imgproc;opencv_legacy;opencv_ml;opencv_nonfree;opencv_objdetect;opencv_photo;opencv_stitching;opencv_ts;opencv_video;opencv_videostab;urdf;urdfdom_model;urdfdom_model_state;urdfdom_sensor;urdfdom_world;collada_parser;rosconsole_bridge;console_bridge;BulletDynamics;BulletCollision;LinearMath;resource_retriever;eigen_conversions;orocos-kdl;pcl_ros_tf;pcl_ros_io;pcl_ros_filters;:/usr/lib/libboost_iostreams-mt.so;:/opt/ros/groovy/lib/libpcl_common.so;:/opt/ros/groovy/lib/libpcl_octree.so;:/usr/lib/libvtkCommon.so.5.8.0;:/usr/lib/libvtkRendering.so.5.8.0;:/usr/lib/libvtkHybrid.so.5.8.0;:/opt/ros/groovy/lib/libpcl_io.so;:/opt/ros/groovy/lib/libpcl_kdtree.so;:/opt/ros/groovy/lib/libpcl_search.so;:/opt/ros/groovy/lib/libpcl_sample_consensus.so;:/opt/ros/groovy/lib/libpcl_filters.so;:/opt/ros/groovy/lib/libpcl_segmentation.so;:/opt/ros/groovy/lib/libpcl_visualization.so;:/opt/ros/groovy/lib/libpcl_features.so;:/usr/lib/libqhull.so;:/opt/ros/groovy/lib/libpcl_surface.so;:/opt/ros/groovy/lib/libpcl_registration.so;:/opt/ros/groovy/lib/libpcl_keypoints.so;:/opt/ros/groovy/lib/libpcl_tracking.so;tf;message_filters;roscpp;:/usr/lib/libboost_signals-mt.so;:/usr/lib/libboost_filesystem-mt.so;rosconsole;:/usr/lib/libboost_regex-mt.so;:/usr/lib/liblog4cxx.so;xmlrpcpp;roscpp_serialization;rostime;:/usr/lib/libboost_date_time-mt.so;:/usr/lib/libboost_system-mt.so;:/usr/lib/libboost_thread-mt.so;pthread;cpp_common
 interactive_segmentation_textured_LIBRARY_DIRS:INTERNAL=/home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_manipulation_utils/simple_robot_control/lib;/opt/ros/groovy/stacks/bullet/lib;/opt/ros/groovy/lib
 interactive_segmentation_textured_cached_manifest_list:INTERNAL=/home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/manifest.xml;/opt/ros/groovy/share/cpp_common/package.xml;/opt/ros/groovy/share/rostime/package.xml;/opt/ros/groovy/share/roscpp_traits/package.xml;/opt/ros/groovy/share/roscpp_serialization/package.xml;/opt/ros/groovy/share/genmsg/package.xml;/opt/ros/groovy/share/genpy/package.xml;/opt/ros/groovy/share/message_runtime/package.xml;/opt/ros/groovy/share/rosconsole/package.xml;/opt/ros/groovy/share/std_msgs/package.xml;/opt/ros/groovy/share/rosgraph_msgs/package.xml;/opt/ros/groovy/share/xmlrpcpp/package.xml;/opt/ros/groovy/share/roscpp/package.xml;/opt/ros/groovy/share/rosgraph/package.xml;/opt/ros/groovy/share/catkin/package.xml;/opt/ros/groovy/share/rospack/package.xml;/opt/ros/groovy/share/roslib/package.xml;/opt/ros/groovy/share/rospy/package.xml;/opt/ros/groovy/share/gencpp/package.xml;/opt/ros/groovy/share/genlisp/package.xml;/opt/ros/groovy/share/message_generation/package.xml;/opt/ros/groovy/share/actionlib_msgs/package.xml;/opt/ros/groovy/share/rosclean/package.xml;/opt/ros/groovy/share/rosmaster/package.xml;/opt/ros/groovy/share/rosout/package.xml;/opt/ros/groovy/share/rosparam/package.xml;/opt/ros/groovy/share/roslaunch/package.xml;/opt/ros/groovy/share/rosunit/package.xml;/opt/ros/groovy/share/rostest/package.xml;/opt/ros/groovy/share/actionlib/package.xml;/opt/ros/groovy/share/geometry_msgs/package.xml;/opt/ros/groovy/share/sensor_msgs/package.xml;/opt/ros/groovy/share/trajectory_msgs/package.xml;/opt/ros/groovy/share/message_filters/package.xml;/opt/ros/groovy/share/tf/package.xml;/opt/ros/groovy/stacks/arm_navigation/arm_navigation_msgs/manifest.xml;/opt/ros/groovy/stacks/arm_navigation/kinematics_msgs/manifest.xml;/opt/ros/groovy/stacks/pr2_controllers/pr2_controllers_msgs/manifest.xml;/opt/ros/groovy/share/orocos_kdl/package.xml;/opt/ros/groovy/share/kdl_conversions/package.xml;/opt/ros/groovy/share/tf_conversions/package.xml;/opt/ros/groovy/stacks/pr2_common_actions/pr2_common_action_msgs/manifest.xml;/home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_manipulation_utils/simple_robot_control/manifest.xml;/opt/ros/groovy/share/opencv2/package.xml;/opt/ros/groovy/share/cv_bridge/package.xml;/opt/ros/groovy/share/image_geometry/package.xml;/opt/ros/groovy/share/console_bridge/package.xml;/opt/ros/groovy/share/class_loader/package.xml;/opt/ros/groovy/share/pluginlib/package.xml;/opt/ros/groovy/share/image_transport/package.xml;/opt/ros/groovy/share/urdfdom_headers/package.xml;/opt/ros/groovy/share/collada_parser/package.xml;/opt/ros/groovy/share/rosconsole_bridge/package.xml;/opt/ros/groovy/share/urdfdom/package.xml;/opt/ros/groovy/share/urdf/package.xml;/opt/ros/groovy/stacks/bullet/manifest.xml;/opt/ros/groovy/share/resource_retriever/package.xml;/home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_image_proc/camera_self_filter/manifest.xml;/opt/ros/groovy/share/eigen_conversions/package.xml;/opt/ros/groovy/share/flann/package.xml;/opt/ros/groovy/share/topic_tools/package.xml;/opt/ros/groovy/share/rosbag/package.xml;/opt/ros/groovy/share/pcl_msgs/package.xml;/opt/ros/groovy/share/pcl/package.xml;/opt/ros/groovy/share/rosmsg/package.xml;/opt/ros/groovy/share/rosservice/package.xml;/opt/ros/groovy/share/dynamic_reconfigure/package.xml;/opt/ros/groovy/share/bond/package.xml;/opt/ros/groovy/share/smclib/package.xml;/opt/ros/groovy/share/bondcpp/package.xml;/opt/ros/groovy/share/nodelet/package.xml;/opt/ros/groovy/share/nodelet_topic_tools/package.xml;/opt/ros/groovy/share/pcl_ros/package.xml;/opt/ros/groovy/stacks/arm_navigation/arm_navigation_msgs/msg_gen/generated;/opt/ros/groovy/stacks/arm_navigation/arm_navigation_msgs/srv_gen/generated;/opt/ros/groovy/stacks/arm_navigation/kinematics_msgs/msg_gen/generated;/opt/ros/groovy/stacks/arm_navigation/kinematics_msgs/srv_gen/generated;/opt/ros/groovy/stacks/pr2_controllers/pr2_controllers_msgs/msg_gen/generated;/opt/ros/groovy/stacks/pr2_controllers/pr2_controllers_msgs/srv_gen/generated;/opt/ros/groovy/stacks/pr2_common_actions/pr2_common_action_msgs/msg_gen/generated;/home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_manipulation_utils/simple_robot_control/srv_gen/generated;/home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_image_proc/camera_self_filter/srv_gen/generated
 interactive_segmentation_textured_temp:INTERNAL=-Wl,-rpath,/home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_manipulation_utils/simple_robot_control/lib;-Wl,-rpath,/opt/ros/groovy/stacks/bullet/lib
 roseus_CMAKE:INTERNAL=
-rosjava_jni_CMAKE:INTERNAL=/home/hao/knowRob/rosjava_jni/rosjava_jni/cmake/rosjava.cmake
 roslib_path:INTERNAL=/opt/ros/groovy/share/roslib
 roslisp_CMAKE:INTERNAL=/opt/ros/groovy/share/roslisp/rosbuild/roslisp.cmake
 

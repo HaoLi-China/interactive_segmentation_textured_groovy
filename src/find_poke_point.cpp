@@ -67,122 +67,154 @@
 
 //#include <camera_self_filter/mask.h>
 
+
+#include <pcl/visualization/cloud_viewer.h>
+
+  #include <sensor_msgs/image_encodings.h>
+
+
+
 #define X_OUTPUT 1
 
-using std::cout;
-using std::endl;
-using std::ostream;
-using namespace std;
+  using std::cout;
+  using std::endl;
+  using std::ostream;
+  using namespace std;
 
-struct randomPoint{
-        	        	cv::Point push_point;
-        	        	Eigen::Vector2f direction;
-        	        };
+//typedef pcl::PointXYZ Point;
+//typedef pcl::PointCloud<Point> PointCloud;
+//typedef PointCloud::Ptr PointCloudPtr;
+//typedef PointCloud::ConstPtr PointCloudConstPtr;
+//typedef pcl::KdTree<Point>::Ptr KdTreePtr;
+
+  void showPointClound (pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,std::string name)
+  {
+  	pcl::visualization::CloudViewer viewer (name);
+
+  	viewer.showCloud (cloud);
+  	while (!viewer.wasStopped ())
+  	{
+
+  	}
+  }
 
 
-ostream& operator<< (ostream& out,  const tf::Transform  tf){
-	Eigen::Affine3d tf_eigen;
-	tf::transformTFToEigen(tf,tf_eigen);
-	out << tf_eigen.matrix();
-	return out;
-
-}
+  struct randomPoint{
+  	cv::Point push_point;
+  	Eigen::Vector2f direction;
+  };
 
 
-class PokePointFinder{
+  ostream& operator<< (ostream& out,  const tf::Transform  tf){
+  	Eigen::Affine3d tf_eigen;
+  	tf::transformTFToEigen(tf,tf_eigen);
+  	out << tf_eigen.matrix();
+  	return out;
 
-	typedef pcl::PointXYZRGB Point;
+  }
 
-	ros::NodeHandle _nh;
-	ros::NodeHandle _nh_private;
-	ros::ServiceServer _getMaskServer;
-	ros::ServiceClient _corner_finder;
-	sensor_msgs::CameraInfoConstPtr _cam_info;
-	image_geometry::PinholeCameraModel _model;
 
-   std::string base_frame;
+  class PokePointFinder{
 
-	double _tolerance_x;
-	double _tolerance_y;
-	double _max_height_z;
-	double virtual_cam_z;
-	double virtual_cam_x;
-	double push_distance;
-	int random_pushing;
-	int morphology_param;
-	double table_height;	
+  	typedef pcl::PointXYZRGB Point;
 
-	float dot_threshold;
+  	ros::NodeHandle _nh;
+  	ros::NodeHandle _nh_private;
+  	ros::ServiceServer _getMaskServer;
+  	ros::ServiceClient _corner_finder;
+  	sensor_msgs::CameraInfoConstPtr _cam_info;
+  	image_geometry::PinholeCameraModel _model;
 
-	tf::TransformListener listener_;
+  	std::string base_frame;
+
+  	double _tolerance_x;
+  	double _tolerance_y;
+  	double _max_height_z;
+  	double virtual_cam_z;
+  	double virtual_cam_x;
+  	double push_distance;
+  	int random_pushing;
+  	int morphology_param;
+  	double table_height;	
+
+  	float dot_threshold;
+
+  	tf::TransformListener listener_;
 	//sensor_msgs::CvBridge _bridge;
 	//cv_bridge::CvImagePtr cv_ptr;
-	ROI_Filter<Point> roi_filter;
+  	ROI_Filter<Point> roi_filter;
 
-	tf::Transform tf_virtual_cam;
-	tf::Transform tf_virtual_cam_transl;
+  	tf::Transform tf_virtual_cam;
+  	tf::Transform tf_virtual_cam_transl;
 
-	pcl::ModelCoefficients::Ptr coefficients;
-    std::string point_cloud;
+  	pcl::ModelCoefficients::Ptr coefficients;
+  	std::string point_cloud;
 
-	ros::Publisher pub;
+  	ros::Publisher pub;
 
-public:
-	PokePointFinder():_nh_private("~"){
-		_nh_private.param("tolerance_x", _tolerance_x, 0.10);
-		_nh_private.param("tolerance_y", _tolerance_y, 0.10);
-		_nh_private.param("max_height_z", _max_height_z, 0.7);
-
-
-		_nh_private.param("virtual_cam_z", virtual_cam_z, 1.5);
-		_nh_private.param("virtual_cam_x",virtual_cam_x, .70);
-
-		_nh_private.param("random_pushing",random_pushing,0);
-		_nh_private.param("push_distance",push_distance,20.0);
-		_nh_private.param("morphology_param",morphology_param,8);
-		_nh_private.param("table_height",table_height,0.75);
-		table_height=table_height-0.1;
-
-		std::string camera_name;
-		_nh_private.param<std::string>("camera_name",camera_name, "/kinect/rgb");
-		_nh_private.param<std::string>("base_frame",base_frame, "base_link");
+  public:
+  	PokePointFinder():_nh_private("~"){
+  		_nh_private.param("tolerance_x", _tolerance_x, 0.10);
+  		_nh_private.param("tolerance_y", _tolerance_y, 0.10);
+  		_nh_private.param("max_height_z", _max_height_z, 0.7);
 
 
- 		 pub = _nh.advertise<geometry_msgs::PoseStamped>("poke_point_finder_node/concave_pose", 1000);
+		//_nh_private.param("virtual_cam_z", virtual_cam_z, 1.5);
+		//_nh_private.param("virtual_cam_x",virtual_cam_x, .70);
+
+  		_nh_private.param("virtual_cam_z", virtual_cam_z, .0);
+  		_nh_private.param("virtual_cam_x",virtual_cam_x, .0);
+
+  		_nh_private.param("random_pushing",random_pushing,0);
+  		_nh_private.param("push_distance",push_distance,20.0);
+  		_nh_private.param("morphology_param",morphology_param,8);
+  		_nh_private.param("table_height",table_height,0.75);
+  		table_height=table_height-0.1;
+
+  		std::string camera_name;
+  		_nh_private.param<std::string>("camera_name",camera_name, "/camera/rgb");
+  		_nh_private.param<std::string>("base_frame",base_frame, "/base_link");
 
 
-	   _nh_private.param<std::string>("point_cloud",point_cloud, "/kinect/rgb/points");
+  		printf("test1\n");
 
-		double dot_threshold_d;
-		_nh_private.param("dot_threshold",dot_threshold_d , 0.5);
-		 dot_threshold = dot_threshold_d;
+  		pub = _nh.advertise<geometry_msgs::PoseStamped>("poke_point_finder_node/concave_pose", 1000);
 
-		_cam_info = ros::topic::waitForMessage<sensor_msgs::CameraInfo>(camera_name +"/camera_info",  ros::Duration(5.0));
-		_model.fromCameraInfo(_cam_info);
 
+  		_nh_private.param<std::string>("point_cloud",point_cloud, "/camera/depth_registered/points");
+  		printf("test2\n");
+  		double dot_threshold_d;
+  		_nh_private.param("dot_threshold",dot_threshold_d , 0.5);
+  		dot_threshold = dot_threshold_d;
+
+  		_cam_info = ros::topic::waitForMessage<sensor_msgs::CameraInfo>(camera_name +"/camera_info",  ros::Duration(5.0));
+  		printf("test3\n");		
+
+  		_model.fromCameraInfo(_cam_info);
+  		printf("test4\n");
 //		service to advertise
 
-		_getMaskServer = _nh.advertiseService("findPokePose", &PokePointFinder::getPokePointServiceCB, this);
+  		_getMaskServer = _nh.advertiseService("findPokePose", &PokePointFinder::getPokePointServiceCB, this);
 
 //		_self_mask_client = _nh.serviceClient<camera_self_filter::mask>("self_mask");
 
 
 		//create location of cam over table
-		tf_virtual_cam.setIdentity();
-		tf_virtual_cam_transl.setIdentity();
-		tf_virtual_cam_transl.setOrigin(tf::Vector3(virtual_cam_x, 0.0, virtual_cam_z));
+  		tf_virtual_cam.setIdentity();
+  		tf_virtual_cam_transl.setIdentity();
+  		tf_virtual_cam_transl.setOrigin(tf::Vector3(virtual_cam_x, 0.0, virtual_cam_z));
 		//optical frame is rotated by 180 degree around y-axis
-		tf::Matrix3x3 rot(0, -1, 0, -1, 0, 0, 0, 0, -1);
+		/*tf::Matrix3x3 rot(0, -1, 0, -1, 0, 0, 0, 0, -1);
 		tf::Quaternion q;
 		rot.getRotation(q);
-		tf_virtual_cam.setRotation(q);
+		tf_virtual_cam.setRotation(q);*/
 
 
 		cout<<"tf_virtual_cam"<<endl<<tf_virtual_cam<<endl;
 		cout<<"tf_virtual_cam_transl"<<endl<<tf_virtual_cam_transl<<endl;
 		cout<<"base_frame "<<base_frame<<endl;
 
-		
+		printf("test5\n");		
 
 		_corner_finder = _nh.serviceClient<interactive_segmentation_textured::cornerFind>("find_corners");
 		if (!_corner_finder.waitForExistence(ros::Duration(5.0))){
@@ -198,60 +230,60 @@ public:
 	bool getRandomPoint (cv::Mat& topview, randomPoint& random)
 	{
 
-	cv::Point2f center;
-	float radius;
-	cv::Mat topview2 = cv::Mat::zeros(topview.rows, topview.cols, CV_8UC3);
-	topview.copyTo(topview2);
-        std::vector<std::vector <cv::Point> >  contours_old;
+		cv::Point2f center;
+		float radius;
+		cv::Mat topview2 = cv::Mat::zeros(topview.rows, topview.cols, CV_8UC3);
+		topview.copyTo(topview2);
+		std::vector<std::vector <cv::Point> >  contours_old;
 
 
-	cv::threshold(topview,topview,100,255,CV_THRESH_BINARY);				
-	cv::Canny(topview, topview2,10,50,3);
-	cv::findContours(topview, contours_old, CV_RETR_LIST,
+		cv::threshold(topview,topview,100,255,CV_THRESH_BINARY);				
+		cv::Canny(topview, topview2,10,50,3);
+		cv::findContours(topview, contours_old, CV_RETR_LIST,
 			CV_CHAIN_APPROX_NONE);
-	cv::imshow("image", topview2);
+		cv::imshow("image", topview2);
 		cv::waitKey();
 
-	cv::minEnclosingCircle(cv::Mat(contours_old.back()), center, radius);
-	cv::cvtColor(topview2, topview2, CV_GRAY2BGR);
-	cv::circle(topview2, center, (int) radius, cv::Scalar(0, 255, 0), 3);
-	cv::imshow("image", topview2);
-			cv::waitKey();
-	Eigen::Vector2f direction_use(1,1);
-	int i_rand_use=0;
+		cv::minEnclosingCircle(cv::Mat(contours_old.back()), center, radius);
+		cv::cvtColor(topview2, topview2, CV_GRAY2BGR);
+		cv::circle(topview2, center, (int) radius, cv::Scalar(0, 255, 0), 3);
+		cv::imshow("image", topview2);
+		cv::waitKey();
+		Eigen::Vector2f direction_use(1,1);
+		int i_rand_use=0;
 
-	while (1) {
+		while (1) {
 
-		srand(time(NULL));
+			srand(time(NULL));
 
-		int max = contours_old.back().size();
-		int counter = 0;
-		int i_rand = rand() % max;
+			int max = contours_old.back().size();
+			int counter = 0;
+			int i_rand = rand() % max;
 
-		while (contours_old.back()[i_rand].y - center.y < 0) {
-			i_rand = rand() % max;
-			counter++;
-		}
+			while (contours_old.back()[i_rand].y - center.y < 0) {
+				i_rand = rand() % max;
+				counter++;
+			}
 
-		center.x = (int) center.x;
-		center.y = (int) center.y;
+			center.x = (int) center.x;
+			center.y = (int) center.y;
 
-		cv::circle(topview2, contours_old.back()[i_rand], 5,
+			cv::circle(topview2, contours_old.back()[i_rand], 5,
 				cv::Scalar(0, 0, 255), 3);
-		Eigen::Vector2f direction(
+			Eigen::Vector2f direction(
 				(int) center.x - contours_old.back()[i_rand].x,
 				(int) center.y - contours_old.back()[i_rand].y);
-		direction.normalize();
-			      
-		direction = 40 * direction;
+			direction.normalize();
+			
+			direction = 40 * direction;
 
-		
+			
 
-		cv::Point2f direct(direction[0] + contours_old.back()[i_rand].x,
+			cv::Point2f direct(direction[0] + contours_old.back()[i_rand].x,
 				direction[1] + contours_old.back()[i_rand].y);
 
-		direct.x = (int) direct.x;
-		direct.y = (int) direct.y;
+			direct.x = (int) direct.x;
+			direct.y = (int) direct.y;
 		//DEBUG
 		/*std::cout << std::endl;
 		std::cout << "coordinates of the point";
@@ -273,7 +305,7 @@ public:
 		cv::circle(topview2, direct, 5, cv::Scalar(0, 0, 255), 3);
 
 		cv::line(topview2, contours_old.back()[i_rand], direct,
-				cv::Scalar(255, 0, 0), 7);
+			cv::Scalar(255, 0, 0), 7);
 
 
 		direction_use=direction;
@@ -286,30 +318,31 @@ public:
 			break;
 	}
 
-        
- 	random.push_point=contours_old.back()[i_rand_use];
-        random.direction=direction_use;
-        
+	
+	random.push_point=contours_old.back()[i_rand_use];
+	random.direction=direction_use;
+
+	return true;
+
+}
 
 
 
 
 
 
-		return true;
+bool getPokePointServiceCB(interactive_segmentation_textured::cornerPokePoseFind::Request& req, interactive_segmentation_textured::cornerPokePoseFind::Response& res){
+	cv::Mat top_view_rgb;
+	printf("test6\n");
+	getTopView(top_view_rgb);
 
-	}
+	cv::imshow("top_view_rgb", top_view_rgb);
+	cv::waitKey();
 
 
-
-
-
-
-	bool getPokePointServiceCB(interactive_segmentation_textured::cornerPokePoseFind::Request& req, interactive_segmentation_textured::cornerPokePoseFind::Response& res){
-		cv::Mat top_view_rgb;
-		getTopView(top_view_rgb);
-		interactive_segmentation_textured::cornerFind::Response res_corner;
-		pcl::PointCloud<pcl::PointNormal> grasps;
+	printf("test7\n");
+	interactive_segmentation_textured::cornerFind::Response res_corner;
+	pcl::PointCloud<pcl::PointNormal> grasps;
 	if (random_pushing!=0)
 	{
 		randomPoint random;
@@ -317,21 +350,24 @@ public:
 		get3dRandomPoint(random,grasps);
 	}
 	else
-		{
+	{
+		printf("test10\n");
 		getCornersToPush(top_view_rgb, res_corner);
- 		get3dPoints(res_corner, grasps);
-		}
+		printf("test11\n");
+		get3dPoints(res_corner, grasps);
+		printf("test12\n");
+	}
 
  		//convert grasps into poses
- 		std::vector<Eigen::Matrix4f> grasp_poses;
- 		convertPointNormalstoGraps(grasps, grasp_poses);
+	std::vector<Eigen::Matrix4f> grasp_poses;
+	convertPointNormalstoGraps(grasps, grasp_poses);
 
- 		BOOST_FOREACH(Eigen::Matrix4f& pose, grasp_poses){
- 			Eigen::Affine3d e2;
- 			e2.matrix() = pose.cast<double>();
- 			geometry_msgs::Pose p_msgs;
+	BOOST_FOREACH(Eigen::Matrix4f& pose, grasp_poses){
+		Eigen::Affine3d e2;
+		e2.matrix() = pose.cast<double>();
+		geometry_msgs::Pose p_msgs;
 
- 			tf::poseEigenToMsg(e2,p_msgs);
+		tf::poseEigenToMsg(e2,p_msgs);
 
 //DEBUG
  			  //tf::Transform grasp_tf;
@@ -342,52 +378,49 @@ public:
  			  //msg.header.seq=0;
  			  //pub.publish(msg);
 
- 			res.corner_poses.push_back(p_msgs);
- 		}
-
- 		//do the same for convex
- 		std::swap(res_corner.corner, res_corner.corner_convex);
- 		std::swap(res_corner.push_direction, res_corner.push_direction_convex);
-
-		pcl::PointCloud<pcl::PointNormal> grasps_convex;
- 		get3dPoints(res_corner, grasps_convex);
- 		std::vector<Eigen::Matrix4f> grasp_poses_convex;
- 		convertPointNormalstoGraps(grasps_convex, grasp_poses_convex);
-
- 		BOOST_FOREACH(Eigen::Matrix4f& pose, grasp_poses_convex){
- 			Eigen::Affine3d e2;
- 			e2.matrix() = pose.cast<double>();
- 			geometry_msgs::Pose p_msgs;
- 			tf::poseEigenToMsg(e2,p_msgs);
- 			res.corner_poses_convex.push_back(p_msgs);
- 		}
-
- 		res.header.frame_id = base_frame;
- 		res.header.stamp = ros::Time::now();
-
- 		return true;
-
+		res.corner_poses.push_back(p_msgs);
 	}
 
+ 		//do the same for convex
+	std::swap(res_corner.corner, res_corner.corner_convex);
+	std::swap(res_corner.push_direction, res_corner.push_direction_convex);
 
-	bool getTopView(cv::Mat& topview){
+	pcl::PointCloud<pcl::PointNormal> grasps_convex;
+	get3dPoints(res_corner, grasps_convex);
+	std::vector<Eigen::Matrix4f> grasp_poses_convex;
+	convertPointNormalstoGraps(grasps_convex, grasp_poses_convex);
+
+	BOOST_FOREACH(Eigen::Matrix4f& pose, grasp_poses_convex){
+		Eigen::Affine3d e2;
+		e2.matrix() = pose.cast<double>();
+		geometry_msgs::Pose p_msgs;
+		tf::poseEigenToMsg(e2,p_msgs);
+		res.corner_poses_convex.push_back(p_msgs);
+	}
+
+	res.header.frame_id = base_frame;
+	res.header.stamp = ros::Time::now();
+
+	return true;
+
+}
 
 
-	  
-		sensor_msgs::PointCloud2ConstPtr cloud_msg = ros::topic::waitForMessage<sensor_msgs::PointCloud2>(point_cloud, ros::Duration(5.0));
-		pcl::PointCloud<Point> cloud, cloud_in;
-		pcl::fromROSMsg<Point>(*cloud_msg, cloud_in);
+bool getTopView(cv::Mat& topview){
+	sensor_msgs::PointCloud2ConstPtr cloud_msg = ros::topic::waitForMessage<sensor_msgs::PointCloud2>(point_cloud, ros::Duration(5.0));
+	pcl::PointCloud<Point> cloud, cloud_in;
+	pcl::fromROSMsg<Point>(*cloud_msg, cloud_in);
 
-		ROS_INFO("got cloud with %d points in %s",cloud_in.points.size(), cloud_in.header.frame_id.c_str() );
+	ROS_INFO("got cloud with %d points in %s",cloud_in.points.size(), cloud_in.header.frame_id.c_str() );
 
-		 pcl::PassThrough<Point> pass;
-		  pass.setInputCloud (cloud_in.makeShared());
-		  pass.setFilterFieldName ("x");
-		  pass.setFilterLimits (-0.35, 0.35);
+	pcl::PassThrough<Point> pass;
+	pass.setInputCloud (cloud_in.makeShared());
+	pass.setFilterFieldName ("x");
+	pass.setFilterLimits (-0.35, 0.35);
 		  //pass.setFilterLimitsNegative (true);
-		  pass.filter (cloud);
+	pass.filter (cloud);
 
-
+          //showPointClound (cloud.makeShared(),"111");
 		//get self mask
 //		camera_self_filter::mask servicecall;
 //		servicecall.request.header.frame_id = cloud.header.frame_id;
@@ -401,37 +434,60 @@ public:
 		//get all transforms
 
 
-		tf::StampedTransform tf_realcam_in_base;
+	tf::StampedTransform tf_realcam_in_base;
 
-		listener_.waitForTransform(base_frame,  cloud_msg->header.frame_id, ros::Time(0), ros::Duration(5.0));
-		listener_.lookupTransform(base_frame,  cloud_msg->header.frame_id, ros::Time(0), tf_realcam_in_base);
-		cout<<"base_frame "<<base_frame<<endl;
-		cout<<"cloud_msg->header.frame_id "<<cloud_msg->header.frame_id<<endl;
+		//listener_.waitForTransform(base_frame,  head_mount_kinect_ir_optical_frame, ros::Time(0), ros::Duration(5.0));
+		//listener_.lookupTransform(base_frame,  cloud_msg->header.frame_id, ros::Time(0), tf_realcam_in_base);
+
+	int flag=0;
+
+	while(!flag){
+		
+
+		try{
+			listener_.waitForTransform(base_frame,  "head_mount_kinect_rgb_optical_frame", ros::Time(0), ros::Duration(5.0));
+			listener_.lookupTransform(base_frame,  "head_mount_kinect_rgb_optical_frame", ros::Time(0), tf_realcam_in_base);
+			flag=1;
+		}
+		catch (tf::TransformException ex){
+                   // cerr<<ex.what()<<endl;
+		}
+	}
 
 
 
-		cout<<"tf_realcam_in_base"<<endl<<tf_realcam_in_base<<endl;
+
+
+	cout<<"base_frame "<<base_frame<<endl;
+	printf("=============\n");
+
+	cout<<"cloud_msg->header.frame_id "<<cloud_msg->header.frame_id<<endl;
+
+	printf("*************\n");
+
+
+	cout<<"tf_realcam_in_base"<<endl<<tf_realcam_in_base<<endl;
 
 		//transform cloud into baselink
-		pcl::PointCloud<Point> cloud_in_virt_cam;
+	pcl::PointCloud<Point> cloud_in_virt_cam;
 
-		tf::Transform full_tf = tf_virtual_cam.inverse() * tf_virtual_cam_transl.inverse() * tf_realcam_in_base;
+	tf::Transform full_tf = tf_virtual_cam.inverse() * tf_virtual_cam_transl.inverse() * tf_realcam_in_base;
 
-		cout<<"full_tf"<<endl<<full_tf<<endl;
+	cout<<"full_tf"<<endl<<full_tf<<endl;
 
-		Eigen::Affine3d transform_eigen;
-		tf::transformTFToEigen(full_tf,transform_eigen );
-		Eigen::Matrix4d transform_eigen3(transform_eigen.matrix());
-		Eigen::Matrix4f transform_eigen3f = transform_eigen3.cast<float>();
-		pcl::transformPointCloud(  cloud, cloud_in_virt_cam, transform_eigen3f );
-
-
+	Eigen::Affine3d transform_eigen;
+	tf::transformTFToEigen(full_tf,transform_eigen );
+	Eigen::Matrix4d transform_eigen3(transform_eigen.matrix());
+	Eigen::Matrix4f transform_eigen3f = transform_eigen3.cast<float>();
+	pcl::transformPointCloud(  cloud, cloud_in_virt_cam, transform_eigen3f );
 
 
 
 
-		cloud_in_virt_cam.header.frame_id = "virtual_cam_frame";
-		cloud_in_virt_cam.header.stamp = cloud.header.stamp;
+
+
+	cloud_in_virt_cam.header.frame_id = "virtual_cam_frame";
+	cloud_in_virt_cam.header.stamp = cloud.header.stamp;
 
 //		//set ROI
 //		double distance = tf_gripper_left_in_base.getOrigin().getX();
@@ -458,7 +514,7 @@ public:
 //
 //		  ROS_INFO_STREAM("min max"<<min<<"\n  max"<<max);
 
-			 pass.setInputCloud (cloud_in_virt_cam.makeShared());
+			/* pass.setInputCloud (cloud_in_virt_cam.makeShared());
 			 pass.setFilterFieldName ("z");
 			std::cerr<<table_height<<std::endl;
 			 pass.setFilterLimits (0.0, virtual_cam_z - this->table_height); //table height - 10cm
@@ -466,29 +522,33 @@ public:
 			 pcl::PointCloud<Point> cloud_temp;
 
 			 pass.filter (cloud_temp);
-			 cloud_in_virt_cam = cloud_temp;
+			 cloud_in_virt_cam = cloud_temp;*/
+
+
+            // showPointClound (cloud_in_virt_cam.makeShared(),"123");
+
 
 
 		//estimate table plane
-	  coefficients = boost::shared_ptr<pcl::ModelCoefficients>(new pcl::ModelCoefficients());
-	  pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+			 coefficients = boost::shared_ptr<pcl::ModelCoefficients>(new pcl::ModelCoefficients());
+			 pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
 	  // Create the segmentation object
-	  pcl::SACSegmentation<Point> seg;
+			 pcl::SACSegmentation<Point> seg;
 	  // Optional
-	  seg.setOptimizeCoefficients (false);
+			 seg.setOptimizeCoefficients (false);
 	  // Mandatory
-	  seg.setModelType (pcl::SACMODEL_PLANE);
-	  seg.setMethodType (pcl::SAC_RANSAC);
-	  seg.setDistanceThreshold (0.015);
+			 seg.setModelType (pcl::SACMODEL_PLANE);
+			 seg.setMethodType (pcl::SAC_RANSAC);
+			 seg.setDistanceThreshold (0.015);
 
-	  seg.setInputCloud (cloud_in_virt_cam.makeShared ());
-	  seg.segment (*inliers, *coefficients);
+			 seg.setInputCloud (cloud_in_virt_cam.makeShared ());
+			 seg.segment (*inliers, *coefficients);
 
 
-	  std::cerr << "Model coefficients: " << coefficients->values[0] << " "
-	                                       << coefficients->values[1] << " "
-	                                       << coefficients->values[2] << " "
-	                                       << coefficients->values[3] << std::endl;
+			 std::cerr << "Model coefficients: " << coefficients->values[0] << " "
+			 << coefficients->values[1] << " "
+			 << coefficients->values[2] << " "
+			 << coefficients->values[3] << std::endl;
 
 
 
@@ -499,121 +559,123 @@ public:
 //	return 0;
 
 	  //extract table
-	  pcl::PointCloud<Point> cloud_table_in_virt_cam;
-	  pcl::ExtractIndices<Point> extract;
-	  extract.setInputCloud (cloud_in_virt_cam.makeShared());
-	  extract.setIndices (inliers);
-	  extract.setNegative (false);
-	  extract.filter (cloud_table_in_virt_cam);
+			 pcl::PointCloud<Point> cloud_table_in_virt_cam;
+			 pcl::ExtractIndices<Point> extract;
+			 extract.setInputCloud (cloud_in_virt_cam.makeShared());
+			 extract.setIndices (inliers);
+			 extract.setNegative (false);
+			 extract.filter (cloud_table_in_virt_cam);
 
 	  //extract everything else
-	  pcl::PointCloud<Point> cloud_objects_in_virt_cam;
-	  extract.setNegative (true);
-	  extract.filter (cloud_objects_in_virt_cam);
+			 pcl::PointCloud<Point> cloud_objects_in_virt_cam;
+			 extract.setNegative (true);
+			 extract.filter (cloud_objects_in_virt_cam);
 
 
-	  ROS_INFO("size table points %d size object points %d", cloud_table_in_virt_cam.points.size(), cloud_objects_in_virt_cam.points.size());
+			 ROS_INFO("size table points %d size object points %d", cloud_table_in_virt_cam.points.size(), cloud_objects_in_virt_cam.points.size());
 //	  pcl::io::savePCDFile("cloud_objects_in_virt_cam.pcd", cloud_objects_in_virt_cam);
 
+
+ //showPointClound (cloud_objects_in_virt_cam.makeShared(),"333");
 
 
 		//project
 
 	    //all
-		cv::Mat mask = cv::Mat::zeros(cv::Size(_cam_info->width, _cam_info->height), CV_8U);
-		cv::Mat mask_cont = cv::Mat::zeros(cv::Size(_cam_info->width, _cam_info->height), CV_8U);
+			 cv::Mat mask = cv::Mat::zeros(cv::Size(_cam_info->width, _cam_info->height), CV_8U);
+			 cv::Mat mask_cont = cv::Mat::zeros(cv::Size(_cam_info->width, _cam_info->height), CV_8U);
 
-		cv::Mat maskRGB = cv::Mat::zeros(cv::Size(_cam_info->width, _cam_info->height), CV_8UC3);
-		ROS_INFO("picel_coords %f %f %f", cloud.points[0].x, cloud.points[0].y,cloud.points[0].z );
-		vector<Point, Eigen::aligned_allocator<Point> >::iterator iter;
-		for (iter = cloud_in_virt_cam.points.begin(); iter != cloud_in_virt_cam.points.end(); ++iter){
-			Point& point = *iter;
+			 cv::Mat maskRGB = cv::Mat::zeros(cv::Size(_cam_info->width, _cam_info->height), CV_8UC3);
+			 ROS_INFO("picel_coords %f %f %f", cloud.points[0].x, cloud.points[0].y,cloud.points[0].z );
+			 vector<Point, Eigen::aligned_allocator<Point> >::iterator iter;
+			 for (iter = cloud_in_virt_cam.points.begin(); iter != cloud_in_virt_cam.points.end(); ++iter){
+			 	Point& point = *iter;
 
-				if (isnan(point.x) || isnan(point.y) || isnan(point.z))
-					continue;
-			cv::Point3d p3d(point.x, point.y, point.z);
-			cv::Point2d p2d;
-			p2d = _model.project3dToPixel(p3d);
-    		int x = round(p2d.x);
-    		int y = round(p2d.y);
-    		if((x>mask.cols-1) || (x<0) || (y>mask.rows-1) || (y<0))
-    			  continue;
-    		mask.at<unsigned char>(y, x) = 255;
-    		cv::circle(maskRGB, cv::Point(x,y), 3, cv::Scalar(point.b, point.g, point.r), -1);
+			 	if (isnan(point.x) || isnan(point.y) || isnan(point.z))
+			 		continue;
+			 	cv::Point3d p3d(point.x, point.y, point.z);
+			 	cv::Point2d p2d;
+			 	p2d = _model.project3dToPixel(p3d);
+			 	int x = round(p2d.x);
+			 	int y = round(p2d.y);
+			 	if((x>mask.cols-1) || (x<0) || (y>mask.rows-1) || (y<0))
+			 		continue;
+			 	mask.at<unsigned char>(y, x) = 255;
+			 	cv::circle(maskRGB, cv::Point(x,y), 3, cv::Scalar(point.b, point.g, point.r), -1);
     		//DEBUG
 //    		maskRGB.at<unsigned char>(y, 3 * x) = point.b;
 //    		maskRGB.at<unsigned char>(y, 3 * x + 1) = point.g;
 //    		maskRGB.at<unsigned char>(y, 3 * x + 2) = point.r;
-		}
+			 }
 
 		//objects
-		cv::Mat mask_objects = cv::Mat::zeros(cv::Size(_cam_info->width, _cam_info->height), CV_8U);
-		for (iter = cloud_objects_in_virt_cam.points.begin(); iter != cloud_objects_in_virt_cam.points.end(); ++iter){
-			Point& point = *iter;
+			 cv::Mat mask_objects = cv::Mat::zeros(cv::Size(_cam_info->width, _cam_info->height), CV_8U);
+			 for (iter = cloud_objects_in_virt_cam.points.begin(); iter != cloud_objects_in_virt_cam.points.end(); ++iter){
+			 	Point& point = *iter;
 
-				if (isnan(point.x) || isnan(point.y) || isnan(point.z))
-					continue;
-			cv::Point3d p3d(point.x, point.y, point.z);
-			cv::Point2d p2d;
-			p2d = _model.project3dToPixel(p3d);
-    		int x = round(p2d.x);
-    		int y = round(p2d.y);
-    		if((x>mask_objects.cols-1) || (x<0) || (y>mask_objects.rows-1) || (y<0))
-    			  continue;
-    		mask_objects.at<unsigned char>(y, x) = 255;
-    		cv::circle(maskRGB, cv::Point(x,y), 3, cv::Scalar(point.b, point.g, point.r), -1);
+			 	if (isnan(point.x) || isnan(point.y) || isnan(point.z))
+			 		continue;
+			 	cv::Point3d p3d(point.x, point.y, point.z);
+			 	cv::Point2d p2d;
+			 	p2d = _model.project3dToPixel(p3d);
+			 	int x = round(p2d.x);
+			 	int y = round(p2d.y);
+			 	if((x>mask_objects.cols-1) || (x<0) || (y>mask_objects.rows-1) || (y<0))
+			 		continue;
+			 	mask_objects.at<unsigned char>(y, x) = 255;
+			 	cv::circle(maskRGB, cv::Point(x,y), 3, cv::Scalar(point.b, point.g, point.r), -1);
     		//DEBUG
 //    		maskRGB.at<unsigned char>(y, 3 * x) = point.b;
 //    		maskRGB.at<unsigned char>(y, 3 * x + 1) = point.g;
 //    		maskRGB.at<unsigned char>(y, 3 * x + 2) = point.r;
-		}
+			 }
 
 		//filter object parts with normals aligned with table normal
 
-		Eigen::Vector3f table_normal;
-		table_normal << coefficients->values[0], coefficients->values[1], coefficients->values[2];
-		table_normal.normalize();
+			 Eigen::Vector3f table_normal;
+			 table_normal << coefficients->values[0], coefficients->values[1], coefficients->values[2];
+			 table_normal.normalize();
 
-		cv::Mat mask_object_tops = cv::Mat::zeros(cv::Size(_cam_info->width, _cam_info->height), CV_8U);
+			 cv::Mat mask_object_tops = cv::Mat::zeros(cv::Size(_cam_info->width, _cam_info->height), CV_8U);
 
-		pcl::NormalEstimation<Point, pcl::Normal> ne;
-		ne.setInputCloud (cloud_objects_in_virt_cam.makeShared());
+			 pcl::NormalEstimation<Point, pcl::Normal> ne;
+			 ne.setInputCloud (cloud_objects_in_virt_cam.makeShared());
 
-		pcl::search::KdTree<Point>::Ptr tree(new pcl::search::KdTree<Point>);
-		ne.setSearchMethod (tree);
-		pcl::PointCloud<pcl::Normal> cloud_normals;
-		ne.setRadiusSearch (0.01);
-		ne.compute (cloud_normals);
+			 pcl::search::KdTree<Point>::Ptr tree(new pcl::search::KdTree<Point>);
+			 ne.setSearchMethod (tree);
+			 pcl::PointCloud<pcl::Normal> cloud_normals;
+			 ne.setRadiusSearch (0.01);
+			 ne.compute (cloud_normals);
 
 
-		pcl::PointCloud<pcl::Normal>::iterator normal_iter = cloud_normals.points.begin();
-		for (iter = cloud_objects_in_virt_cam.points.begin(); iter != cloud_objects_in_virt_cam.points.end(); ++iter, ++normal_iter){
-			Point& point = *iter;
-			pcl::Normal&  normal = *normal_iter;
-			float dot_prod = std::abs(table_normal.dot(normal.getNormalVector3fMap()));
+			 pcl::PointCloud<pcl::Normal>::iterator normal_iter = cloud_normals.points.begin();
+			 for (iter = cloud_objects_in_virt_cam.points.begin(); iter != cloud_objects_in_virt_cam.points.end(); ++iter, ++normal_iter){
+			 	Point& point = *iter;
+			 	pcl::Normal&  normal = *normal_iter;
+			 	float dot_prod = std::abs(table_normal.dot(normal.getNormalVector3fMap()));
     		//DEBUG
 //			std::cout<<" table normal \n"<<table_normal<<"\n  object normal \n"<<normal.getNormalVector3fMap();
 //			printf("\n dp %f dp_thresh %f \n", dot_prod, dot_threshold);
-			if (dot_prod < dot_threshold){
-				continue;
-			}
+			 	if (dot_prod < dot_threshold){
+			 		continue;
+			 	}
 
-				if (isnan(point.x) || isnan(point.y) || isnan(point.z))
-					continue;
-			cv::Point3d p3d(point.x, point.y, point.z);
-			cv::Point2d p2d;
-			p2d = _model.project3dToPixel(p3d);
-    		int x = round(p2d.x);
-    		int y = round(p2d.y);
-    		if((x>mask_object_tops.cols-1) || (x<0) || (y>mask_object_tops.rows-1) || (y<0))
-    			  continue;
-    		mask_object_tops.at<unsigned char>(y, x) = 255;
-    		cv::circle(maskRGB, cv::Point(x,y), 3, cv::Scalar(point.b, point.g, point.r), -1);
+			 	if (isnan(point.x) || isnan(point.y) || isnan(point.z))
+			 		continue;
+			 	cv::Point3d p3d(point.x, point.y, point.z);
+			 	cv::Point2d p2d;
+			 	p2d = _model.project3dToPixel(p3d);
+			 	int x = round(p2d.x);
+			 	int y = round(p2d.y);
+			 	if((x>mask_object_tops.cols-1) || (x<0) || (y>mask_object_tops.rows-1) || (y<0))
+			 		continue;
+			 	mask_object_tops.at<unsigned char>(y, x) = 255;
+			 	cv::circle(maskRGB, cv::Point(x,y), 3, cv::Scalar(point.b, point.g, point.r), -1);
     		//DEBUG
 //    		maskRGB.at<unsigned char>(y, 3 * x) = point.b;
 //    		maskRGB.at<unsigned char>(y, 3 * x + 1) = point.g;
 //    		maskRGB.at<unsigned char>(y, 3 * x + 2) = point.r;
-		}
+			 }
 
 
 
@@ -623,53 +685,53 @@ public:
 		//table
 
 
-		cv::Mat mask_table = cv::Mat::zeros(cv::Size(_cam_info->width, _cam_info->height), CV_8U);
-		for (iter = cloud_table_in_virt_cam.points.begin(); iter != cloud_table_in_virt_cam.points.end(); ++iter){
-			Point& point = *iter;
+			 cv::Mat mask_table = cv::Mat::zeros(cv::Size(_cam_info->width, _cam_info->height), CV_8U);
+			 for (iter = cloud_table_in_virt_cam.points.begin(); iter != cloud_table_in_virt_cam.points.end(); ++iter){
+			 	Point& point = *iter;
 
-				if (isnan(point.x) || isnan(point.y) || isnan(point.z))
-					continue;
-			cv::Point3d p3d(point.x, point.y, point.z);
-			cv::Point2d p2d;
-			p2d = _model.project3dToPixel(p3d);
-    		int x = round(p2d.x);
-    		int y = round(p2d.y);
-    		if((x>mask_table.cols-1) || (x<0) || (y>mask_table.rows-1) || (y<0))
-    			  continue;
-    		mask_table.at<unsigned char>(y, x) = 127;
-    		cv::circle(maskRGB, cv::Point(x,y), 3, cv::Scalar(point.b, point.g, point.r), -1);
+			 	if (isnan(point.x) || isnan(point.y) || isnan(point.z))
+			 		continue;
+			 	cv::Point3d p3d(point.x, point.y, point.z);
+			 	cv::Point2d p2d;
+			 	p2d = _model.project3dToPixel(p3d);
+			 	int x = round(p2d.x);
+			 	int y = round(p2d.y);
+			 	if((x>mask_table.cols-1) || (x<0) || (y>mask_table.rows-1) || (y<0))
+			 		continue;
+			 	mask_table.at<unsigned char>(y, x) = 127;
+			 	cv::circle(maskRGB, cv::Point(x,y), 3, cv::Scalar(point.b, point.g, point.r), -1);
     		//DEBUG
 //    		maskRGB.at<unsigned char>(y, 3 * x) = point.b;
 //    		maskRGB.at<unsigned char>(y, 3 * x + 1) = point.g;
 //    		maskRGB.at<unsigned char>(y, 3 * x + 2) = point.r;
-		}
+			 }
 
 
 
 #if X_OUTPUT
 
-		cv::namedWindow("test", 1);
-		cv::waitKey();
+			 cv::namedWindow("test", 1);
+			 cv::waitKey();
 
-		cv::imshow("test", mask);
+			 cv::imshow("mask", mask);
 
-		cv::waitKey();
+			 cv::waitKey();
 
-		cv::imshow("test", mask_table);
+			 cv::imshow("mask_table", mask_table);
 
-		std::cerr<<"mask table"<<std::endl;		
+			 std::cerr<<"mask table"<<std::endl;		
 
-		cv::waitKey();
+			 cv::waitKey();
 
-		cv::imshow("test", mask_objects);
+			 cv::imshow("mask_objects", mask_objects);
 
-		cv::waitKey();
+			 cv::waitKey();
 
-		cv::imshow("test", mask_object_tops);
-       		
-		std::cerr<<"before morphology"<<std::endl;		
-			
-		cv::waitKey();
+			 cv::imshow("mask_object_tops", mask_object_tops);
+			 
+			 std::cerr<<"before morphology"<<std::endl;		
+			 
+			 cv::waitKey();
 
 
 		//DEBUG
@@ -681,19 +743,19 @@ public:
 #endif
 
 // BUG MAKE PARAM
-		cv::morphologyEx(mask_object_tops,mask_object_tops,CV_MOP_CLOSE , getStructuringElement(cv::MORPH_RECT, cv::Size(3,3)), cv::Point(-1,-1), this->morphology_param);
+			 cv::morphologyEx(mask_object_tops,mask_object_tops,CV_MOP_CLOSE , getStructuringElement(cv::MORPH_RECT, cv::Size(3,3)), cv::Point(-1,-1), this->morphology_param);
 		// it can be done in other way:
 //		cv::dilate(mask_object_tops,mask_object_tops,getStructuringElement(cv::MORPH_RECT, cv::Size(5,5)) );
 //		cv::erode(mask_object_tops, mask_object_tops, cv::Mat(), cv::Point(-1, -1), 3 );
 
 
-		mask = cv::max(mask_table, mask_object_tops);
+			 mask = cv::max(mask_table, mask_object_tops);
 
 #if X_OUTPUT
 
 
-		cv::imshow("test", mask_object_tops);
-		cv::waitKey();
+			 cv::imshow("mask_object_tops1", mask_object_tops);
+			 cv::waitKey();
 #endif
 		//DEBUG
 //		cv::dilate(self_mask,self_mask,getStructuringElement(cv::MORPH_RECT, cv::Size(5,5)) );
@@ -706,54 +768,55 @@ public:
 
 		//search for largest contour
 
-		  std::vector<std::vector<cv::Point> > contours;
-		  std::vector<cv::Vec4i> hierarchy;
-		  cv::findContours(mask_object_tops, contours, hierarchy, CV_RETR_CCOMP,
-				  CV_CHAIN_APPROX_SIMPLE);
+			 std::vector<std::vector<cv::Point> > contours;
+			 std::vector<cv::Vec4i> hierarchy;
+			 cv::findContours(mask_object_tops, contours, hierarchy, CV_RETR_CCOMP,
+			 	CV_CHAIN_APPROX_SIMPLE);
 
-		  if (hierarchy.empty()){
-			  ROS_ERROR("no contours found");
-			  return false;
-		  }
+			 if (hierarchy.empty()){
+			 	ROS_ERROR("no contours found");
+			 	return false;
+			 }
 
-		  bool found = false;
-		  int max_contour = 0;
-		  double max_contour_area = 0;
+			 bool found = false;
+			 int max_contour = 0;
+			 double max_contour_area = 0;
 
-		  const double contour_min_area_ = 100;
-		  for (int i=0; i < hierarchy.size(); i = hierarchy[i][0])
-		  {
-			double contour_area = cv::contourArea(cv::Mat(contours[i]));
-			if (contour_area > contour_min_area_  && contour_area > max_contour_area)
-			{
-			  found = true;
-			  max_contour_area = contour_area;
-			  max_contour = i;
-			}
-		  }
+			 const double contour_min_area_ = 100;
+			 for (int i=0; i < hierarchy.size(); i = hierarchy[i][0])
+			 {
+			 	double contour_area = cv::contourArea(cv::Mat(contours[i]));
+			 	if (contour_area > contour_min_area_  && contour_area > max_contour_area)
+			 	{
+			 		found = true;
+			 		max_contour_area = contour_area;
+			 		max_contour = i;
+			 	}
+			 }
 
-		  if (found)
-		  {
+			 if (found)
+			 {
 
-			cv::drawContours(mask_cont, contours, max_contour, cv::Scalar(255), CV_FILLED,
-					8, hierarchy, 0);
+			 	cv::drawContours(mask_cont, contours, max_contour, cv::Scalar(255), CV_FILLED,
+			 		8, hierarchy, 0);
 
 
 
-		  }
-		  else
-				cout<<" not found"<<endl;
+			 }
+			 else
+			 	cout<<" not found"<<endl;
 
 #if X_OUTPUT
-		cv::imshow("test", mask_cont);
-		cv::waitKey();
+			 cv::imshow("mask_cont", mask_cont);
+			 cv::waitKey();
 #endif
 
+			 printf("test8\n");
+			 cv::imwrite("test.png", mask_cont);
 
-		cv::imwrite("test.png", mask_cont);
 
-
-		IplImage ipl_image = mask_cont;
+			 printf("test9\n");
+		/*IplImage ipl_image = mask_cont;
 		//cv::Mat ipl2mat(ipl_image);
 		cv::Mat ipl2mat(cv::cvarrToMat(&ipl_image));
 		//sensor_msgs::ImagePtr img_msg = sensor_msgs::CvBridge::cvToImgMsg(&ipl_image);
@@ -762,7 +825,7 @@ public:
 		cv_bridge::CvImagePtr cv_ptr;
 		cv_ptr->image = ipl2mat;
 		sensor_msgs::ImagePtr img_msg = cv_ptr->toImageMsg();
-		
+		printf("test9\n");
 		//--- solution 2:
 		//cv_bridge::CvImage cvi;
 		//cvi.image = ipl_image;
@@ -770,8 +833,11 @@ public:
 		//cvi.toImageMsg(im_msg);
 		
 		img_msg->header.frame_id = _cam_info->header.frame_id;
-		img_msg->header.stamp = cloud.header.stamp;
+		img_msg->header.stamp = cloud.header.stamp;*/
 		topview = mask_cont;
+
+		cv::imshow("topview1", topview);
+		cv::waitKey();
 
 		return true;
 
@@ -781,21 +847,94 @@ public:
 
 //	function to get the corners from another service
 
-bool getCornersToPush(cv::Mat& topview, interactive_segmentation_textured::cornerFind::Response& res){
-	interactive_segmentation_textured::cornerFind::Request req;
-	IplImage temp(topview);
+	bool getCornersToPush(cv::Mat& topview, interactive_segmentation_textured::cornerFind::Response& res){
+		interactive_segmentation_textured::cornerFind::Request req;
+		IplImage temp(topview);
 	//cv::Mat ipl2mat(temp);
-	cv::Mat ipl2mat(cv::cvarrToMat(&temp));
+		cv::Mat ipl2mat(cv::cvarrToMat(&temp));
+
+		std::cout<<ipl2mat.channels()<<std::endl;
+
+		cv::imshow("topview2", topview);
+		cv::waitKey();
+
+		printf("test10-0\n");
 	//sensor_msgs::ImagePtr imgptr  = sensor_msgs::CvBridge::cvToImgMsg(&temp);
-	cv_bridge::CvImagePtr cv_ptr;
-	cv_ptr->image = ipl2mat;
-	sensor_msgs::ImagePtr imgptr = cv_ptr->toImageMsg();
+	/*cv_bridge::CvImagePtr cv_ptr;
+
+	cv_ptr.reset (new cv_bridge::CvImage);
+
+     printf("test10-1\n");
+
+	//cv_ptr->image = ipl2mat;
+     cv_ptr->image = cv::imread("/home/hao/test.png");
+    printf("test10-1-1\n");
+
+	cv::imshow("cv_ptr->image", cv_ptr->image);
+	cv::waitKey();
+
+
+   //cv_ptr->image.covertTo(v_ptr->image, CV_8UC3);
+   //cv::cvtColor(cv_ptr->image, cv_ptr->image, CV_GRAY2BGR);
+
+
+    sensor_msgs::ImageConstPtr imgptr = cv_ptr->toImageMsg();
+
+
+	printf("test10-2\n");
     	
-	req.image = *imgptr;
-	_corner_finder.call(req, res);
+	req.image = *imgptr;*/
 
 
-	return true;
+
+
+
+
+
+    /*cv_bridge::CvImagePtr cv_ptr;
+    cv_ptr.reset (new cv_bridge::CvImage);
+   
+    cv_ptr->image = cv::imread("/home/hao/test.png");
+
+    cv_ptr->encoding = "bgr8";*/
+
+    cv_bridge::CvImagePtr cv_ptr;
+    cv_ptr.reset (new cv_bridge::CvImage);
+    
+    cv_ptr->image = ipl2mat;
+
+    cv_ptr->encoding = "mono8";
+    
+
+    cv::imshow("cv_ptr->image", cv_ptr->image);
+    cv::waitKey();
+
+    sensor_msgs::ImageConstPtr imgptr = cv_ptr->toImageMsg();
+
+    req.image = *imgptr;
+    
+    //image_pub_.publish(cv_ptr->toImageMsg());
+
+
+    //test========================  
+    
+	/*cv_bridge::CvImagePtr cv_ptr_test;
+    try
+  	{
+  	 cv_ptr_test = cv_bridge::toCvCopy(*imgptr);
+     }
+ 	 catch (cv_bridge::Exception& e)
+  	 {
+         ROS_ERROR("cv_bridge exception: %s", e.what());
+     }
+    cv::imshow("hhh", cv_ptr_test->image);
+    cv::waitKey();*/
+
+    _corner_finder.call(req, res);
+
+    printf("getCornersToPush\n");
+
+    return true;
 }
 
 
@@ -858,6 +997,8 @@ bool get3dPoints(const interactive_segmentation_textured::cornerFind::Response& 
 
 	grasp_points = grasp_points_in_base;
 
+	printf("get3dPoints\n");
+
 
 	return true;
 }
@@ -870,42 +1011,42 @@ bool get3dRandomPoint(randomPoint& random, pcl::PointCloud<pcl::PointNormal>& gr
 	grasp_points.width = 1;
 	grasp_points.height = 1;
 
-		cv::Point2d p2d(random.push_point.x,random.push_point.y);
-		cv::Point3d p3d;
+	cv::Point2d p2d(random.push_point.x,random.push_point.y);
+	cv::Point3d p3d;
 
 //		get the ray of the pinhole camera
-		p3d = _model.projectPixelTo3dRay(p2d);
-		Eigen::Vector3f ray(p3d.x, p3d.y, p3d.z);
+	p3d = _model.projectPixelTo3dRay(p2d);
+	Eigen::Vector3f ray(p3d.x, p3d.y, p3d.z);
 
 //		distance to the corner to push from the virtual camera
-		float t = -1.0 * coefficients->values[3] / (table_normal.dot(ray));
+	float t = -1.0 * coefficients->values[3] / (table_normal.dot(ray));
 
 //		vector to the corner
-		Eigen::Vector3f intersec = t * ray;
+	Eigen::Vector3f intersec = t * ray;
 
 //		do the same for the next point that is the point + push
-		int x=random.push_point.x;
-		float xdirection=random.direction[0];
-		int y=random.push_point.y;
-		float ydirection=random.direction[1];
+	int x=random.push_point.x;
+	float xdirection=random.direction[0];
+	int y=random.push_point.y;
+	float ydirection=random.direction[1];
 
-		p2d = cv::Point2d(x+this->push_distance*xdirection,y+this->push_distance*ydirection);
-		p3d = _model.projectPixelTo3dRay(p2d);
-		ray = Eigen::Vector3f(p3d.x, p3d.y, p3d.z);
-		t = -1.0 * coefficients->values[3] / (table_normal.dot(ray));
+	p2d = cv::Point2d(x+this->push_distance*xdirection,y+this->push_distance*ydirection);
+	p3d = _model.projectPixelTo3dRay(p2d);
+	ray = Eigen::Vector3f(p3d.x, p3d.y, p3d.z);
+	t = -1.0 * coefficients->values[3] / (table_normal.dot(ray));
 
 //		vector between the corner and the corner + push direction
-		Eigen::Vector3f normal = t * ray - intersec;
-		normal.normalize();
+	Eigen::Vector3f normal = t * ray - intersec;
+	normal.normalize();
 
 //		put the corner with the direction of push into the point cloud
-		pcl::PointNormal p;
-		p.getArray3fMap() = intersec;
+	pcl::PointNormal p;
+	p.getArray3fMap() = intersec;
 //DEBUG
 		//cout<<"intersec"<<endl<<intersec<<endl;
 
-		p.getNormalVector3fMap() = normal;
-		grasp_points.push_back(p);
+	p.getNormalVector3fMap() = normal;
+	grasp_points.push_back(p);
 
 
 
@@ -963,6 +1104,8 @@ bool convertPointNormalstoGraps(pcl::PointCloud<pcl::PointNormal>& cloud, std::v
 int main(int argc, char** argv){
 
 	ros::init(argc, argv, "poke_point_finder_node");
+
+	printf("test0\n");
 
 	PokePointFinder hcs;
 	ros::spin();

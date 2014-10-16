@@ -573,6 +573,41 @@ clean: CMakeFiles/find_poke_point.dir/clean
 .PHONY : clean
 
 #=============================================================================
+# Target rules for target CMakeFiles/my_client.dir
+
+# All Build rule for target.
+CMakeFiles/my_client.dir/all: CMakeFiles/rosbuild_precompile.dir/all
+	$(MAKE) -f CMakeFiles/my_client.dir/build.make CMakeFiles/my_client.dir/depend
+	$(MAKE) -f CMakeFiles/my_client.dir/build.make CMakeFiles/my_client.dir/build
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/build/CMakeFiles  31
+	@echo "Built target my_client"
+.PHONY : CMakeFiles/my_client.dir/all
+
+# Include target in all.
+all: CMakeFiles/my_client.dir/all
+.PHONY : all
+
+# Build rule for subdir invocation for target.
+CMakeFiles/my_client.dir/rule: cmake_check_build_system
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/build/CMakeFiles 22
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/my_client.dir/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/build/CMakeFiles 0
+.PHONY : CMakeFiles/my_client.dir/rule
+
+# Convenience name for target.
+my_client: CMakeFiles/my_client.dir/rule
+.PHONY : my_client
+
+# clean rule for target.
+CMakeFiles/my_client.dir/clean:
+	$(MAKE) -f CMakeFiles/my_client.dir/build.make CMakeFiles/my_client.dir/clean
+.PHONY : CMakeFiles/my_client.dir/clean
+
+# clean rule for target.
+clean: CMakeFiles/my_client.dir/clean
+.PHONY : clean
+
+#=============================================================================
 # Target rules for target CMakeFiles/rosbuild_clean-test-results.dir
 
 # All Build rule for target.
@@ -607,8 +642,8 @@ clean: CMakeFiles/rosbuild_clean-test-results.dir/clean
 # Target rules for target CMakeFiles/rosbuild_precompile.dir
 
 # All Build rule for target.
-CMakeFiles/rosbuild_precompile.dir/all: CMakeFiles/rospack_gensrv.dir/all
 CMakeFiles/rosbuild_precompile.dir/all: CMakeFiles/rospack_genmsg_libexe.dir/all
+CMakeFiles/rosbuild_precompile.dir/all: CMakeFiles/rospack_gensrv.dir/all
 	$(MAKE) -f CMakeFiles/rosbuild_precompile.dir/build.make CMakeFiles/rosbuild_precompile.dir/depend
 	$(MAKE) -f CMakeFiles/rosbuild_precompile.dir/build.make CMakeFiles/rosbuild_precompile.dir/build
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/build/CMakeFiles 
@@ -671,8 +706,8 @@ clean: CMakeFiles/rosbuild_premsgsrvgen.dir/clean
 
 # All Build rule for target.
 CMakeFiles/rospack_genmsg.dir/all: CMakeFiles/ROSBUILD_genmsg_lisp.dir/all
-CMakeFiles/rospack_genmsg.dir/all: CMakeFiles/ROSBUILD_genmsg_cpp.dir/all
 CMakeFiles/rospack_genmsg.dir/all: CMakeFiles/ROSBUILD_genmsg_roseus_interactive_segmentation_textured.dir/all
+CMakeFiles/rospack_genmsg.dir/all: CMakeFiles/ROSBUILD_genmsg_cpp.dir/all
 	$(MAKE) -f CMakeFiles/rospack_genmsg.dir/build.make CMakeFiles/rospack_genmsg.dir/depend
 	$(MAKE) -f CMakeFiles/rospack_genmsg.dir/build.make CMakeFiles/rospack_genmsg.dir/build
 	$(CMAKE_COMMAND) -E cmake_progress_report /home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/build/CMakeFiles 
@@ -735,8 +770,8 @@ clean: CMakeFiles/rospack_genmsg_libexe.dir/clean
 
 # All Build rule for target.
 CMakeFiles/rospack_gensrv.dir/all: CMakeFiles/ROSBUILD_gensrv_lisp.dir/all
-CMakeFiles/rospack_gensrv.dir/all: CMakeFiles/ROSBUILD_gensrv_roseus_interactive_segmentation_textured.dir/all
 CMakeFiles/rospack_gensrv.dir/all: CMakeFiles/ROSBUILD_gensrv_cpp.dir/all
+CMakeFiles/rospack_gensrv.dir/all: CMakeFiles/ROSBUILD_gensrv_roseus_interactive_segmentation_textured.dir/all
 CMakeFiles/rospack_gensrv.dir/all: CMakeFiles/ROSBUILD_gensrv_py.dir/all
 	$(MAKE) -f CMakeFiles/rospack_gensrv.dir/build.make CMakeFiles/rospack_gensrv.dir/depend
 	$(MAKE) -f CMakeFiles/rospack_gensrv.dir/build.make CMakeFiles/rospack_gensrv.dir/build
@@ -961,7 +996,7 @@ clean: CMakeFiles/test-results-run.dir/clean
 CMakeFiles/test_client.dir/all: CMakeFiles/rosbuild_precompile.dir/all
 	$(MAKE) -f CMakeFiles/test_client.dir/build.make CMakeFiles/test_client.dir/depend
 	$(MAKE) -f CMakeFiles/test_client.dir/build.make CMakeFiles/test_client.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/build/CMakeFiles  31
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/build/CMakeFiles  32
 	@echo "Built target test_client"
 .PHONY : CMakeFiles/test_client.dir/all
 
@@ -1027,7 +1062,7 @@ clean: CMakeFiles/tests.dir/clean
 CMakeFiles/transform_depth_image.dir/all: CMakeFiles/rosbuild_precompile.dir/all
 	$(MAKE) -f CMakeFiles/transform_depth_image.dir/build.make CMakeFiles/transform_depth_image.dir/depend
 	$(MAKE) -f CMakeFiles/transform_depth_image.dir/build.make CMakeFiles/transform_depth_image.dir/build
-	$(CMAKE_COMMAND) -E cmake_progress_report /home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/build/CMakeFiles  32
+	$(CMAKE_COMMAND) -E cmake_progress_report /home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/build/CMakeFiles  33
 	@echo "Built target transform_depth_image"
 .PHONY : CMakeFiles/transform_depth_image.dir/all
 

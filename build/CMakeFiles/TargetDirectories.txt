@@ -16,6 +16,7 @@
 /home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/build/CMakeFiles/find_poke_point.dir
 /home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/build/gtest/CMakeFiles/gtest.dir
 /home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/build/gtest/CMakeFiles/gtest_main.dir
+/home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/build/CMakeFiles/my_client.dir
 /home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/build/CMakeFiles/rosbuild_clean-test-results.dir
 /home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/build/CMakeFiles/rosbuild_precompile.dir
 /home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/build/CMakeFiles/rosbuild_premsgsrvgen.dir

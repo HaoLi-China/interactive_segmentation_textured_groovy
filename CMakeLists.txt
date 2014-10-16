@@ -32,6 +32,8 @@ rosbuild_add_executable (c_track_features src/c_track_features.cpp)
 rosbuild_add_executable (c_track_features_3d src/c_track_features_3d.cpp)
 rosbuild_add_executable (c_track_features_with_grasping src/c_track_features_with_grasping.cpp)
 
+rosbuild_add_executable(my_client src/my_client.cpp)
+
 #common commands for building c++ executables and libraries
 #rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
 #target_link_libraries(${PROJECT_NAME} another_library)

@@ -348,6 +348,19 @@ find_poke_point/fast:
 .PHONY : find_poke_point/fast
 
 #=============================================================================
+# Target rules for targets named my_client
+
+# Build rule for target.
+my_client: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 my_client
+.PHONY : my_client
+
+# fast build rule for target.
+my_client/fast:
+	$(MAKE) -f CMakeFiles/my_client.dir/build.make CMakeFiles/my_client.dir/build
+.PHONY : my_client/fast
+
+#=============================================================================
 # Target rules for targets named rosbuild_clean-test-results
 
 # Build rule for target.
@@ -688,6 +701,30 @@ src/find_poke_point.cpp.s:
 	$(MAKE) -f CMakeFiles/find_poke_point.dir/build.make CMakeFiles/find_poke_point.dir/src/find_poke_point.cpp.s
 .PHONY : src/find_poke_point.cpp.s
 
+src/my_client.o: src/my_client.cpp.o
+.PHONY : src/my_client.o
+
+# target to build an object file
+src/my_client.cpp.o:
+	$(MAKE) -f CMakeFiles/my_client.dir/build.make CMakeFiles/my_client.dir/src/my_client.cpp.o
+.PHONY : src/my_client.cpp.o
+
+src/my_client.i: src/my_client.cpp.i
+.PHONY : src/my_client.i
+
+# target to preprocess a source file
+src/my_client.cpp.i:
+	$(MAKE) -f CMakeFiles/my_client.dir/build.make CMakeFiles/my_client.dir/src/my_client.cpp.i
+.PHONY : src/my_client.cpp.i
+
+src/my_client.s: src/my_client.cpp.s
+.PHONY : src/my_client.s
+
+# target to generate assembly for a file
+src/my_client.cpp.s:
+	$(MAKE) -f CMakeFiles/my_client.dir/build.make CMakeFiles/my_client.dir/src/my_client.cpp.s
+.PHONY : src/my_client.cpp.s
+
 src/test_client.o: src/test_client.cpp.o
 .PHONY : src/test_client.o
 
@@ -763,6 +800,7 @@ help:
 	@echo "... install/local"
 	@echo "... install/strip"
 	@echo "... list_install_components"
+	@echo "... my_client"
 	@echo "... rebuild_cache"
 	@echo "... rosbuild_clean-test-results"
 	@echo "... rosbuild_precompile"
@@ -796,6 +834,9 @@ help:
 	@echo "... src/find_poke_point.o"
 	@echo "... src/find_poke_point.i"
 	@echo "... src/find_poke_point.s"
+	@echo "... src/my_client.o"
+	@echo "... src/my_client.i"
+	@echo "... src/my_client.s"
 	@echo "... src/test_client.o"
 	@echo "... src/test_client.i"
 	@echo "... src/test_client.s"

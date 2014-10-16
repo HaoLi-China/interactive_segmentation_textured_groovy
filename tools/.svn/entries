@@ -2,8 +2,8 @@
 
 dir
 1691
-http://svn.code.sf.net/p/bosch-ros-pkg/code/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/tools
-http://svn.code.sf.net/p/bosch-ros-pkg/code
+svn://svn.code.sf.net/p/bosch-ros-pkg/code/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/tools
+svn://svn.code.sf.net/p/bosch-ros-pkg/code
 
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2014-10-08T08:35:51.326283Z
+2014-10-09T09:10:15.145531Z
 67cbfbdad5674eb5a7e2bf21d13f58da
 2012-09-01T05:45:40.777655Z
 1590

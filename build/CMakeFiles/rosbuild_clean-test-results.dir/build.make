@@ -46,7 +46,7 @@ CMAKE_BINARY_DIR = /home/hao/groovy_ws/myws/bosch-ros-pkg-code/stacks/bosch_inte
 include CMakeFiles/rosbuild_clean-test-results.dir/progress.make
 
 CMakeFiles/rosbuild_clean-test-results:
-	if ! rm -rf /home/hao/catkin_ws/build/test_results/interactive_segmentation_textured; then echo WARNING:\ failed\ to\ remove\ test-results\ directory ; fi
+	if ! rm -rf /home/hao/.ros/test_results/interactive_segmentation_textured; then echo WARNING:\ failed\ to\ remove\ test-results\ directory ; fi
 
 rosbuild_clean-test-results: CMakeFiles/rosbuild_clean-test-results
 rosbuild_clean-test-results: CMakeFiles/rosbuild_clean-test-results.dir/build.make

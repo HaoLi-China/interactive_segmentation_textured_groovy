@@ -2,8 +2,8 @@
 
 dir
 1691
-http://svn.code.sf.net/p/bosch-ros-pkg/code/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/srv
-http://svn.code.sf.net/p/bosch-ros-pkg/code
+svn://svn.code.sf.net/p/bosch-ros-pkg/code/trunk/stacks/bosch_interactive_segmentation/interactive_segmentation_textured/srv
+svn://svn.code.sf.net/p/bosch-ros-pkg/code
 
 
 
@@ -32,7 +32,7 @@ file
 
 
 
-2014-10-08T08:35:52.590283Z
+2014-10-09T09:10:20.625531Z
 605efd3fdf33a4e6efa4d848c07d4506
 2011-09-28T22:17:01.232727Z
 1037
@@ -66,7 +66,7 @@ file
 
 
 
-2014-10-08T08:35:52.590283Z
+2014-10-09T09:10:20.625531Z
 e9e1fb7a873519bf3c90da6d505e8741
 2011-09-28T22:17:01.232727Z
 1037
@@ -100,7 +100,7 @@ file
 
 
 
-2014-10-08T08:35:52.590283Z
+2014-10-09T09:10:20.625531Z
 b27d5e411dec129cefcbf6c125bac595
 2011-09-28T22:17:01.232727Z
 1037
@@ -134,7 +134,7 @@ file
 
 
 
-2014-10-08T08:35:52.590283Z
+2014-10-09T09:10:20.625531Z
 398e354e5fe4d1f2c4fbb25d67e28fb6
 2011-09-28T22:17:01.232727Z
 1037
@@ -168,7 +168,7 @@ file
 
 
 
-2014-10-08T08:35:52.590283Z
+2014-10-09T09:10:20.625531Z
 18dc3fb18e9eb56ed0a5d87e8f00a44e
 2011-09-28T22:17:01.232727Z
 1037
